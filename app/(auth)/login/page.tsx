@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState('')
   const { signIn, signUp, loading, isAuthenticated } = useAuth()
+  const router = useRouter()
 
   if (isAuthenticated) {
     redirect('/dashboard')
@@ -31,7 +32,11 @@ export default function LoginPage() {
 
       if (result.error) {
         setError(result.error.message)
+      } else if (isSignUp && result.data?.user && !result.data.user.email_confirmed_at) {
+        // Redirect to verification page for sign up
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`)
       }
+      // For sign in, the useAuth hook will handle the redirect to dashboard
     } catch {
       setError('An unexpected error occurred')
     }
