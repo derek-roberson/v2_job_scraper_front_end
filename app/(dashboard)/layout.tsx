@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@/lib/hooks/use-auth'
+import { useAuth } from '@/utils/hooks/use-auth'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
