@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useStates, useCities } from '@/utils/hooks/use-locations'
+import { US_STATES, useCities } from '@/utils/hooks/use-locations'
 
 interface CreateQueryFormProps {
   onSubmit: (data: {
@@ -22,22 +22,23 @@ interface CreateQueryFormProps {
 
 export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryFormProps) {
   const [keywords, setKeywords] = useState('')
-  const [selectedStateId, setSelectedStateId] = useState<number | undefined>()
+  const [selectedStateCode, setSelectedStateCode] = useState('')
   const [selectedCityId, setSelectedCityId] = useState<number | undefined>()
   const [workTypes, setWorkTypes] = useState<number[]>([])
 
-  // Load states and cities from database
-  const { data: states = [], isLoading: statesLoading } = useStates()
-  const { data: cities = [], isLoading: citiesLoading } = useCities(selectedStateId)
+  // Get selected state info
+  const selectedState = US_STATES.find(s => s.code === selectedStateCode)
+  
+  // Load cities from database for selected state
+  const { data: cities = [], isLoading: citiesLoading } = useCities(selectedState?.name)
+  
+  const selectedCity = cities.find(c => c.id === selectedCityId)
 
   const workTypeOptions = [
     { id: 1, name: 'On-site' },
     { id: 2, name: 'Hybrid' },
     { id: 3, name: 'Remote' },
   ]
-
-  const selectedState = states.find(s => s.id === selectedStateId)
-  const selectedCity = cities.find(c => c.id === selectedCityId)
 
   const handleWorkTypeChange = (workTypeId: number, checked: boolean) => {
     setWorkTypes(prev => 
@@ -58,9 +59,8 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
   }
 
   // Reset city when state changes
-  const handleStateChange = (stateId: string) => {
-    const id = parseInt(stateId)
-    setSelectedStateId(id)
+  const handleStateChange = (stateCode: string) => {
+    setSelectedStateCode(stateCode)
     setSelectedCityId(undefined) // Clear city selection
   }
 
@@ -116,18 +116,15 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
               <Select 
-                value={selectedStateId?.toString() || ''} 
+                value={selectedStateCode} 
                 onValueChange={handleStateChange}
-                disabled={statesLoading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={
-                    statesLoading ? "Loading states..." : "Select a state..."
-                  } />
+                  <SelectValue placeholder="Select a state..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {states.map((state) => (
-                    <SelectItem key={state.id} value={state.id.toString()}>
+                  {US_STATES.map((state) => (
+                    <SelectItem key={state.code} value={state.code}>
                       {state.name}
                     </SelectItem>
                   ))}
@@ -141,11 +138,11 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
               <Select 
                 value={selectedCityId?.toString() || ''} 
                 onValueChange={(cityId) => setSelectedCityId(parseInt(cityId))}
-                disabled={!selectedStateId || citiesLoading}
+                disabled={!selectedStateCode || citiesLoading}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={
-                    !selectedStateId 
+                    !selectedStateCode 
                       ? "Select a state first..." 
                       : citiesLoading
                       ? "Loading cities..."
