@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { supabase } from '@/utils/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const [isResending, setIsResending] = useState(false)
   const [resendMessage, setResendMessage] = useState('')
   const searchParams = useSearchParams()
@@ -33,7 +33,7 @@ export default function VerifyEmailPage() {
       } else {
         setResendMessage('Verification email sent! Please check your inbox.')
       }
-    } catch (err) {
+    } catch {
       setResendMessage('Failed to resend email. Please try again later.')
     } finally {
       setIsResending(false)
@@ -46,7 +46,7 @@ export default function VerifyEmailPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Check Your Email</CardTitle>
           <CardDescription>
-            We've sent you a verification link
+            We&apos;ve sent you a verification link
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -68,7 +68,7 @@ export default function VerifyEmailPage() {
             </div>
             
             <p className="text-gray-600 mb-4">
-              We've sent a verification email to:
+              We&apos;ve sent a verification email to:
             </p>
             <p className="font-semibold text-gray-800 mb-6">
               {email || 'your email address'}
@@ -76,7 +76,7 @@ export default function VerifyEmailPage() {
             
             <p className="text-sm text-gray-600 mb-6">
               Click the link in the email to verify your account and start using Job Alerts.
-              If you don't see the email, check your spam folder.
+              If you don&apos;t see the email, check your spam folder.
             </p>
           </div>
 
@@ -109,5 +109,17 @@ export default function VerifyEmailPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div>Loading...</div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }
