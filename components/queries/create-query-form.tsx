@@ -15,10 +15,11 @@ interface CreateQueryFormProps {
     state?: string
     city?: string
   }) => void
+  onCancel?: () => void
   loading?: boolean
 }
 
-export function CreateQueryForm({ onSubmit, loading }: CreateQueryFormProps) {
+export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryFormProps) {
   const [keywords, setKeywords] = useState('')
   const [selectedState, setSelectedState] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
@@ -154,7 +155,11 @@ export function CreateQueryForm({ onSubmit, loading }: CreateQueryFormProps) {
             <Button type="submit" disabled={loading || !keywords || workTypes.length === 0}>
               {loading ? 'Creating...' : 'Create Query'}
             </Button>
-            <Button type="button" variant="outline">
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={onCancel}
+            >
               Cancel
             </Button>
           </div>

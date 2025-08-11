@@ -40,7 +40,7 @@ export default function DashboardLayout({
           <h1 className="text-xl font-bold">Job Alerts</h1>
         </div>
         <Separator />
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 pb-24">
           <Link href="/dashboard">
             <Button 
               variant={isActivePath('/dashboard') ? 'default' : 'ghost'} 
@@ -74,9 +74,8 @@ export default function DashboardLayout({
             </Button>
           </Link>
         </nav>
-        <div className="absolute bottom-4 left-4 right-4">
-          <Separator className="mb-4" />
-          <div className="text-sm text-gray-600 mb-2">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+          <div className="text-sm text-gray-600 mb-3 text-center">
             {user?.email}
           </div>
           <Button 

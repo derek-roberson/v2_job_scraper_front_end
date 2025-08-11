@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/utils/hooks/use-auth'
+import { useQueries, useQueryMutations } from '@/utils/hooks/use-queries'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CreateQueryForm } from '@/components/queries/create-query-form'
@@ -10,34 +11,45 @@ import { QueryList } from '@/components/queries/query-list'
 export default function DashboardPage() {
   const { user } = useAuth()
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [queries] = useState<Array<{
-    id: number; 
-    keywords: string;
-    work_types: number[];
-    location_string?: string;
-    is_active: boolean;
-    created_at: string;
-  }>>([]) // TODO: Replace with actual queries hook
+  
+  // Use actual query hooks
+  const { data: queries = [], isLoading } = useQueries()
+  const { createQuery, updateQuery, deleteQuery } = useQueryMutations()
 
-  const handleCreateQuery = (data: {
+  const handleCreateQuery = async (data: {
     keywords: string
     work_types: number[]
     state?: string
     city?: string
   }) => {
-    console.log('Creating query:', data)
-    // TODO: Implement actual query creation
-    setShowCreateForm(false)
+    try {
+      const queryData = {
+        keywords: data.keywords,
+        work_types: data.work_types,
+        location_string: data.state && data.city ? `${data.city}, ${data.state}` : data.state,
+      }
+      
+      await createQuery.mutateAsync(queryData)
+      setShowCreateForm(false)
+    } catch (error) {
+      console.error('Failed to create query:', error)
+    }
   }
 
-  const handleToggleQuery = (id: number, active: boolean) => {
-    console.log('Toggle query:', id, active)
-    // TODO: Implement query toggle
+  const handleToggleQuery = async (id: number, active: boolean) => {
+    try {
+      await updateQuery.mutateAsync({ id, is_active: active })
+    } catch (error) {
+      console.error('Failed to toggle query:', error)
+    }
   }
 
-  const handleDeleteQuery = (id: number) => {
-    console.log('Delete query:', id)
-    // TODO: Implement query deletion
+  const handleDeleteQuery = async (id: number) => {
+    try {
+      await deleteQuery.mutateAsync(id)
+    } catch (error) {
+      console.error('Failed to delete query:', error)
+    }
   }
 
   return (
@@ -105,7 +117,8 @@ export default function DashboardPage() {
           {showCreateForm ? (
             <CreateQueryForm
               onSubmit={handleCreateQuery}
-              loading={false}
+              onCancel={() => setShowCreateForm(false)}
+              loading={createQuery.isPending}
             />
           ) : (
             <Card>
@@ -134,12 +147,18 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <QueryList
-                queries={queries}
-                onToggle={handleToggleQuery}
-                onDelete={handleDeleteQuery}
-                loading={false}
-              />
+              {isLoading ? (
+                <div className="text-center py-8 text-gray-500">
+                  Loading queries...
+                </div>
+              ) : (
+                <QueryList
+                  queries={queries}
+                  onToggle={handleToggleQuery}
+                  onDelete={handleDeleteQuery}
+                  loading={updateQuery.isPending || deleteQuery.isPending}
+                />
+              )}
             </CardContent>
           </Card>
         </div>
