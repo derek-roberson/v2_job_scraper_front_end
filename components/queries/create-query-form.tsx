@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useStates, useCities } from '@/utils/hooks/use-locations'
 
 interface CreateQueryFormProps {
   onSubmit: (data: {
@@ -21,15 +22,22 @@ interface CreateQueryFormProps {
 
 export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryFormProps) {
   const [keywords, setKeywords] = useState('')
-  const [selectedState, setSelectedState] = useState('')
-  const [selectedCity, setSelectedCity] = useState('')
+  const [selectedStateId, setSelectedStateId] = useState<number | undefined>()
+  const [selectedCityId, setSelectedCityId] = useState<number | undefined>()
   const [workTypes, setWorkTypes] = useState<number[]>([])
+
+  // Load states and cities from database
+  const { data: states = [], isLoading: statesLoading } = useStates()
+  const { data: cities = [], isLoading: citiesLoading } = useCities(selectedStateId)
 
   const workTypeOptions = [
     { id: 1, name: 'On-site' },
     { id: 2, name: 'Hybrid' },
     { id: 3, name: 'Remote' },
   ]
+
+  const selectedState = states.find(s => s.id === selectedStateId)
+  const selectedCity = cities.find(c => c.id === selectedCityId)
 
   const handleWorkTypeChange = (workTypeId: number, checked: boolean) => {
     setWorkTypes(prev => 
@@ -44,9 +52,16 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
     onSubmit({
       keywords,
       work_types: workTypes,
-      state: selectedState || undefined,
-      city: selectedCity || undefined,
+      state: selectedState?.name || undefined,
+      city: selectedCity?.city || undefined,
     })
+  }
+
+  // Reset city when state changes
+  const handleStateChange = (stateId: string) => {
+    const id = parseInt(stateId)
+    setSelectedStateId(id)
+    setSelectedCityId(undefined) // Clear city selection
   }
 
   return (
@@ -100,17 +115,22 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
             {/* State Selector */}
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Select value={selectedState} onValueChange={setSelectedState}>
+              <Select 
+                value={selectedStateId?.toString() || ''} 
+                onValueChange={handleStateChange}
+                disabled={statesLoading}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a state..." />
+                  <SelectValue placeholder={
+                    statesLoading ? "Loading states..." : "Select a state..."
+                  } />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CA">California</SelectItem>
-                  <SelectItem value="NY">New York</SelectItem>
-                  <SelectItem value="TX">Texas</SelectItem>
-                  <SelectItem value="FL">Florida</SelectItem>
-                  <SelectItem value="WA">Washington</SelectItem>
-                  {/* Add more states as needed */}
+                  {states.map((state) => (
+                    <SelectItem key={state.id} value={state.id.toString()}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -119,33 +139,25 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
               <Select 
-                value={selectedCity} 
-                onValueChange={setSelectedCity}
-                disabled={!selectedState}
+                value={selectedCityId?.toString() || ''} 
+                onValueChange={(cityId) => setSelectedCityId(parseInt(cityId))}
+                disabled={!selectedStateId || citiesLoading}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={
-                    !selectedState 
+                    !selectedStateId 
                       ? "Select a state first..." 
+                      : citiesLoading
+                      ? "Loading cities..."
                       : "Select a city..."
                   } />
                 </SelectTrigger>
                 <SelectContent>
-                  {selectedState === 'CA' && (
-                    <>
-                      <SelectItem value="San Francisco">San Francisco</SelectItem>
-                      <SelectItem value="Los Angeles">Los Angeles</SelectItem>
-                      <SelectItem value="San Diego">San Diego</SelectItem>
-                    </>
-                  )}
-                  {selectedState === 'NY' && (
-                    <>
-                      <SelectItem value="New York">New York</SelectItem>
-                      <SelectItem value="Buffalo">Buffalo</SelectItem>
-                      <SelectItem value="Rochester">Rochester</SelectItem>
-                    </>
-                  )}
-                  {/* Add more cities for other states */}
+                  {cities.map((city) => (
+                    <SelectItem key={city.id} value={city.id.toString()}>
+                      {city.city}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
