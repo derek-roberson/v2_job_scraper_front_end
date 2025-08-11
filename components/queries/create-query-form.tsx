@@ -15,6 +15,7 @@ interface CreateQueryFormProps {
     work_types: number[]
     state?: string
     city?: string
+    city_id?: number
   }) => void
   onCancel?: () => void
   loading?: boolean
@@ -50,12 +51,27 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({
+    console.log('=== FORM SUBMISSION STARTED ===')
+    console.log('Form values:', {
+      keywords,
+      workTypes,
+      selectedStateCode,
+      selectedCityId,
+      selectedState: selectedState?.name,
+      selectedCity: selectedCity?.city
+    })
+    
+    const submitData = {
       keywords,
       work_types: workTypes,
       state: selectedState?.name || undefined,
       city: selectedCity?.city || undefined,
-    })
+      city_id: selectedCityId || undefined,
+    }
+    
+    console.log('Calling onSubmit with:', submitData)
+    onSubmit(submitData)
+    console.log('onSubmit called successfully')
   }
 
   // Reset city when state changes
