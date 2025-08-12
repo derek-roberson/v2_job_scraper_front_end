@@ -52,8 +52,6 @@ export function useJobs(filters?: JobFilters) {
 
       const { data, error } = await query
 
-      console.log('Jobs query result:', { data, error, userId: user.id })
-      
       if (error) throw error
       return data as Job[]
     },
