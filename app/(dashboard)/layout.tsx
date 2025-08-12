@@ -38,7 +38,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-sm border-r">
+      <div className="w-64 bg-white shadow-sm border-r relative">
         <div className="p-6">
           <h1 className="text-xl font-bold">Job Alerts</h1>
         </div>
