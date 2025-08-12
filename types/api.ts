@@ -69,13 +69,21 @@ export interface Query {
 
 export interface Job {
   id: number
-  query_id: number
+  query_id?: number
+  user_id: string
   title: string
   company: string
-  location: string
-  posted: string
+  link: string
+  location?: string
+  posted?: string
+  scraped_at?: string
+  is_deleted: boolean
+  created_at: string
   description?: string
   salary?: string
-  url?: string
-  created_at: string
+  queries?: {
+    id: number
+    keywords: string
+    location_string?: string
+  }
 }
