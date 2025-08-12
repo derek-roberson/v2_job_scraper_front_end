@@ -23,15 +23,6 @@ export default function DashboardPage() {
     city?: string
     city_id?: number
   }) => {
-    console.log('=== HANDLE CREATE QUERY STARTED ===')
-    console.log('Form submitted with data:', data)
-    console.log('createQuery mutation status:', {
-      isPending: createQuery.isPending,
-      isIdle: createQuery.isIdle,
-      isError: createQuery.isError,
-      isSuccess: createQuery.isSuccess
-    })
-    
     try {
       const queryData = {
         keywords: data.keywords,
@@ -40,18 +31,10 @@ export default function DashboardPage() {
         location_string: data.state && data.city ? `${data.city}, ${data.state}` : data.state,
       }
       
-      console.log('Sending to database:', queryData)
-      console.log('About to call createQuery.mutateAsync...')
-      
-      const result = await createQuery.mutateAsync(queryData)
-      console.log('Query created successfully:', result)
-      console.log('Setting showCreateForm to false')
+      await createQuery.mutateAsync(queryData)
       setShowCreateForm(false)
-      console.log('=== HANDLE CREATE QUERY SUCCESS ===')
     } catch (error) {
       console.error('Failed to create query:', error)
-      console.log('=== HANDLE CREATE QUERY ERROR ===')
-      // Show user-friendly error
       alert(`Failed to create query: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }

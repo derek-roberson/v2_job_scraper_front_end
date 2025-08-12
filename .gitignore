@@ -5,6 +5,7 @@
 # ===============================================
 .env
 .env.local
+.env.local.dev
 .env.development
 .env.test
 .env.production
