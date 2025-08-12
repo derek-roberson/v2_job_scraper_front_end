@@ -63,7 +63,31 @@ export function useUserProfile() {
         .eq('id', user.id)
         .single()
 
-      if (error) throw error
+      if (error) {
+        // If profile doesn't exist, try to create one
+        if (error.code === 'PGRST116') {
+          console.log('No profile found, attempting to create one')
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: user.id,
+              account_type: 'user',
+              subscription_tier: 'free',
+              max_active_queries: 3,
+              is_suspended: false,
+            })
+            .select()
+            .single()
+          
+          if (createError) {
+            console.error('Failed to create profile:', createError)
+            throw createError
+          }
+          
+          return newProfile as UserProfile
+        }
+        throw error
+      }
       return data as UserProfile
     },
     enabled: !!user?.id,

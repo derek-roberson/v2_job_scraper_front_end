@@ -9,12 +9,19 @@ import { Separator } from '@/components/ui/separator'
 import { ProfileSettings } from '@/components/settings/profile-settings'
 import { NotificationSettings } from '@/components/settings/notification-settings'
 import { AccountInfo } from '@/components/settings/account-info'
-import { User, Bell, Shield, CreditCard } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { User, Bell, Shield, CreditCard, RefreshCw } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const { data: profile, isLoading: profileLoading } = useUserProfile()
   const { data: notificationPrefs, isLoading: prefsLoading } = useNotificationPreferences()
+  
+  const refreshData = () => {
+    queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+    queryClient.invalidateQueries({ queryKey: ['notification-preferences'] })
+  }
 
   if (profileLoading || prefsLoading) {
     return (
@@ -32,9 +39,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-gray-600">Manage your account preferences and settings</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-gray-600">Manage your account preferences and settings</p>
+        </div>
+        <Button variant="outline" onClick={refreshData}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
       {/* Account Overview */}
