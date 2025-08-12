@@ -33,6 +33,8 @@ export default function JobsPage() {
   const { data: jobs = [], isLoading, error } = useJobs(filters)
   const { data: stats } = useJobStats()
 
+  console.log('Jobs page data:', { jobs, isLoading, error, filters })
+
   const clearFilters = () => {
     setSearch('')
     setSelectedQueryId(undefined)

@@ -15,7 +15,7 @@ export function useJobs(filters?: JobFilters) {
         .from('jobs')
         .select(`
           *,
-          queries!inner(id, keywords, location_string)
+          queries(id, keywords, location_string)
         `)
         .eq('user_id', user.id)
         .eq('is_deleted', false)
@@ -52,6 +52,8 @@ export function useJobs(filters?: JobFilters) {
 
       const { data, error } = await query
 
+      console.log('Jobs query result:', { data, error, userId: user.id })
+      
       if (error) throw error
       return data as Job[]
     },
