@@ -124,14 +124,14 @@ export default function JobsPage() {
 
             {/* Query Filter */}
             <Select 
-              value={selectedQueryId?.toString() || ''} 
-              onValueChange={(value) => setSelectedQueryId(value ? parseInt(value) : undefined)}
+              value={selectedQueryId?.toString() || 'all'} 
+              onValueChange={(value) => setSelectedQueryId(value === 'all' ? undefined : parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All queries" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All queries</SelectItem>
+                <SelectItem value="all">All queries</SelectItem>
                 {queries.map((query) => (
                   <SelectItem key={query.id} value={query.id.toString()}>
                     {query.keywords}

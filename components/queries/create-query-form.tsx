@@ -138,8 +138,8 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
               <Select 
-                value={selectedCityId?.toString() || ''} 
-                onValueChange={(cityId) => setSelectedCityId(parseInt(cityId))}
+                value={selectedCityId?.toString() || 'none'} 
+                onValueChange={(cityId) => setSelectedCityId(cityId === 'none' ? undefined : parseInt(cityId))}
                 disabled={!selectedStateCode || citiesLoading}
               >
                 <SelectTrigger>
@@ -152,6 +152,7 @@ export function CreateQueryForm({ onSubmit, onCancel, loading }: CreateQueryForm
                   } />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No city filter</SelectItem>
                   {cities.map((city) => (
                     <SelectItem key={city.id} value={city.id.toString()}>
                       {city.city}
