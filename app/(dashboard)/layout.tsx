@@ -4,6 +4,7 @@ import { useAuth } from '@/utils/hooks/use-auth'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { NotificationIndicator } from '@/components/notifications/notification-indicator'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -57,12 +58,13 @@ export default function DashboardLayout({
               Jobs
             </Button>
           </Link>
-          <Link href="/analytics">
+          <Link href="/notifications">
             <Button 
-              variant={isActivePath('/analytics') ? 'default' : 'ghost'} 
+              variant={isActivePath('/notifications') ? 'default' : 'ghost'} 
               className="w-full justify-start"
             >
-              Analytics
+              <NotificationIndicator />
+              <span className="ml-2">Notifications</span>
             </Button>
           </Link>
           <Link href="/settings">
