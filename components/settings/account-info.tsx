@@ -11,6 +11,8 @@ interface AccountInfoProps {
 }
 
 export function AccountInfo({ profile, user }: AccountInfoProps) {
+  console.log('AccountInfo received profile:', profile)
+  
   const formatAccountType = (type: string) => {
     switch (type) {
       case 'admin': return 'Administrator'

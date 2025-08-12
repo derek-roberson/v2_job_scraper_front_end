@@ -63,6 +63,13 @@ export function useUserProfile() {
         .eq('id', user.id)
         .single()
 
+      console.log('User profile fetch:', {
+        userId: user.id,
+        data,
+        error,
+        accountType: data?.account_type
+      })
+
       if (error) {
         // If profile doesn't exist, try to create one
         if (error.code === 'PGRST116') {
