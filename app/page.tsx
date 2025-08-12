@@ -27,9 +27,9 @@ export default function LandingPage() {
           </div>
           <div className="space-x-4">
             <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
+              <Button variant="ghost" className="bg-white/70 hover:bg-white border border-gray-200 text-gray-700 hover:text-gray-900">Sign In</Button>
             </Link>
-            <Link href="/login">
+            <Link href="/login?mode=signup">
               <Button>Get Started</Button>
             </Link>
           </div>
@@ -49,7 +49,7 @@ export default function LandingPage() {
             perfect opportunity again.
           </p>
           <div className="space-x-4">
-            <Link href="/login">
+            <Link href="/login?mode=signup">
               <Button size="lg" className="px-8 py-3">
                 Start Free Trial
               </Button>
@@ -118,7 +118,7 @@ export default function LandingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/login">
+              <Link href="/login?mode=signup">
                 <Button size="lg" className="w-full">
                   Get Started Now - Free Trial
                 </Button>
