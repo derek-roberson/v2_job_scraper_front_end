@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Save, Mail, Smartphone, Webhook, Settings } from 'lucide-react'
 
@@ -22,10 +21,9 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   const [mobileNotifications, setMobileNotifications] = useState(preferences?.mobile_push_notifications ?? false)
   const [webhookNotifications, setWebhookNotifications] = useState(preferences?.webhook_notifications ?? false)
   const [webhookUrl, setWebhookUrl] = useState(preferences?.webhook_url || '')
-  const [frequency, setFrequency] = useState(preferences?.notification_frequency || 'immediate')
+  const [frequency, setFrequency] = useState(preferences?.notification_frequency || 'hourly')
   const [emailDigest, setEmailDigest] = useState(preferences?.email_digest ?? false)
   const [dataSharing, setDataSharing] = useState(preferences?.data_sharing_consent ?? false)
-  const [marketing, setMarketing] = useState(preferences?.marketing_consent ?? false)
 
   // Update form when preferences change
   useEffect(() => {
@@ -34,10 +32,9 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
       setMobileNotifications(preferences.mobile_push_notifications ?? false)
       setWebhookNotifications(preferences.webhook_notifications ?? false)
       setWebhookUrl(preferences.webhook_url || '')
-      setFrequency(preferences.notification_frequency || 'immediate')
+      setFrequency(preferences.notification_frequency || 'hourly')
       setEmailDigest(preferences.email_digest ?? false)
       setDataSharing(preferences.data_sharing_consent ?? false)
-      setMarketing(preferences.marketing_consent ?? false)
     }
   }, [preferences])
 
@@ -48,10 +45,9 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
         mobile_push_notifications: mobileNotifications,
         webhook_notifications: webhookNotifications,
         webhook_url: webhookUrl.trim() || undefined,
-        notification_frequency: frequency as 'immediate' | 'hourly' | 'daily',
+        notification_frequency: frequency as 'hourly',
         email_digest: emailDigest,
         data_sharing_consent: dataSharing,
-        marketing_consent: marketing,
       })
     } catch (error) {
       console.error('Failed to update notification preferences:', error)
@@ -64,10 +60,8 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
     mobileNotifications !== (preferences?.mobile_push_notifications ?? false) ||
     webhookNotifications !== (preferences?.webhook_notifications ?? false) ||
     webhookUrl !== (preferences?.webhook_url || '') ||
-    frequency !== (preferences?.notification_frequency || 'immediate') ||
     emailDigest !== (preferences?.email_digest ?? false) ||
-    dataSharing !== (preferences?.data_sharing_consent ?? false) ||
-    marketing !== (preferences?.marketing_consent ?? false)
+    dataSharing !== (preferences?.data_sharing_consent ?? false)
 
   return (
     <div className="space-y-6">
@@ -154,17 +148,13 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
         <h4 className="font-medium mb-4">Notification Frequency</h4>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="frequency">How often should we send notifications?</Label>
-            <Select value={frequency} onValueChange={(value) => setFrequency(value as 'immediate' | 'hourly' | 'daily')}>
-              <SelectTrigger className="w-full md:w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="immediate">Immediate (as jobs are found)</SelectItem>
-                <SelectItem value="hourly">Hourly digest</SelectItem>
-                <SelectItem value="daily">Daily digest</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="frequency">Notification Frequency</Label>
+            <div className="p-3 bg-gray-50 rounded-lg border">
+              <div className="font-medium text-sm">Hourly notifications</div>
+              <p className="text-sm text-gray-600">
+                Job alerts are sent once per hour when new matches are found
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -203,19 +193,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="marketing">Marketing Communications</Label>
-              <p className="text-sm text-gray-600">
-                Receive updates about new features and job search tips
-              </p>
-            </div>
-            <Switch
-              id="marketing"
-              checked={marketing}
-              onCheckedChange={setMarketing}
-            />
-          </div>
         </div>
       </div>
 

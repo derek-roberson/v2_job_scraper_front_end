@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useNotificationLogs, useNotificationStatus } from '@/utils/hooks/use-notifications'
-import { useNotificationPreferences } from '@/utils/hooks/use-profile'
+import { useNotificationPreferences, useUserProfile } from '@/utils/hooks/use-profile'
+import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,10 +20,18 @@ export default function NotificationsPage() {
   const [typeFilter, setTypeFilter] = useState('all')
   const queryClient = useQueryClient()
 
+  // Check admin access
+  const { data: userProfile } = useUserProfile()
+
   // Fetch notification data
   const { data: notificationLogs, isLoading: logsLoading } = useNotificationLogs(100)
   const { data: notificationStatus, isLoading: statusLoading } = useNotificationStatus()
   const { data: notificationPrefs } = useNotificationPreferences()
+
+  // Admin access check - redirect non-admin users
+  if (userProfile && userProfile.account_type !== 'admin') {
+    redirect('/dashboard')
+  }
 
   // Filter logs based on selected filters
   const filteredLogs = notificationLogs?.filter(log => {
@@ -44,10 +53,10 @@ export default function NotificationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Bell className="w-8 h-8" />
-            Notifications
+            <TestTube className="w-8 h-8" />
+            Notification Testing (Admin)
           </h1>
-          <p className="text-gray-600">Manage your job alert notifications and delivery history</p>
+          <p className="text-gray-600">Test notification delivery systems and view delivery history</p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/settings">
@@ -176,9 +185,9 @@ export default function NotificationsPage() {
 
             <div className="p-4 border rounded-lg bg-gray-50">
               <BellRing className="w-6 h-6 mb-2" />
-              <h4 className="font-medium">Real-time Alerts</h4>
+              <h4 className="font-medium">Hourly Job Alerts</h4>
               <p className="text-sm text-gray-600">
-                {notificationPrefs?.notification_frequency || 'immediate'} frequency
+                Notifications sent every hour when new jobs match your queries
               </p>
             </div>
           </div>

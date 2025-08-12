@@ -23,12 +23,11 @@ export interface NotificationPreferences {
   webhook_notifications: boolean
   webhook_url?: string
   webhook_secret?: string
-  notification_frequency: 'immediate' | 'hourly' | 'daily'
+  notification_frequency: 'hourly'
   email_digest: boolean
   push_subscription_data?: any
   expo_push_token?: string
   data_sharing_consent: boolean
-  marketing_consent: boolean
   created_at: string
   updated_at: string
 }
@@ -43,10 +42,9 @@ export interface UpdateNotificationPreferencesRequest {
   mobile_push_notifications?: boolean
   webhook_notifications?: boolean
   webhook_url?: string
-  notification_frequency?: 'immediate' | 'hourly' | 'daily'
+  notification_frequency?: 'hourly'
   email_digest?: boolean
   data_sharing_consent?: boolean
-  marketing_consent?: boolean
 }
 
 export function useUserProfile() {
@@ -116,10 +114,9 @@ export function useNotificationPreferences() {
             email_notifications: true,
             mobile_push_notifications: false,
             webhook_notifications: false,
-            notification_frequency: 'immediate',
+            notification_frequency: 'hourly',
             email_digest: false,
             data_sharing_consent: false,
-            marketing_consent: false,
           } as Partial<NotificationPreferences>
         }
         throw error

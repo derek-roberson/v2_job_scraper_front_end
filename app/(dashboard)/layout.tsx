@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/utils/hooks/use-auth'
+import { useUserProfile } from '@/utils/hooks/use-profile'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -14,6 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { user, loading, signOut, isAuthenticated } = useAuth()
+  const { data: userProfile } = useUserProfile()
   const pathname = usePathname()
 
   if (loading) {
@@ -58,15 +60,17 @@ export default function DashboardLayout({
               Jobs
             </Button>
           </Link>
-          <Link href="/notifications">
-            <Button 
-              variant={isActivePath('/notifications') ? 'default' : 'ghost'} 
-              className="w-full justify-start"
-            >
-              <NotificationIndicator />
-              <span className="ml-2">Notifications</span>
-            </Button>
-          </Link>
+          {userProfile?.account_type === 'admin' && (
+            <Link href="/notifications">
+              <Button 
+                variant={isActivePath('/notifications') ? 'default' : 'ghost'} 
+                className="w-full justify-start"
+              >
+                <NotificationIndicator />
+                <span className="ml-2">Notifications (Admin)</span>
+              </Button>
+            </Link>
+          )}
           <Link href="/settings">
             <Button 
               variant={isActivePath('/settings') ? 'default' : 'ghost'} 

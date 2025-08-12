@@ -70,7 +70,7 @@ export function NotificationStatusCards({ status, preferences, isLoading }: Noti
       icon: <Mail className="w-5 h-5" />,
       enabled: status?.email_enabled ?? true,
       lastSent: status?.last_email_sent,
-      frequency: preferences?.notification_frequency || 'immediate',
+      frequency: 'hourly',
       digest: preferences?.email_digest ?? false
     },
     {
