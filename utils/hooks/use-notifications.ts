@@ -5,7 +5,7 @@ import { useAuth } from '@/utils/hooks/use-auth'
 export interface NotificationLog {
   id: number
   user_id: string
-  notification_type: 'email' | 'mobile_push' | 'web_push' | 'webhook'
+  notification_type: 'email' | 'webhook'
   trigger_event: 'new_jobs' | 'query_complete' | 'system_alert' | 'digest'
   job_count: number
   query_ids: number[]
@@ -18,7 +18,7 @@ export interface NotificationLog {
 }
 
 export interface SendNotificationRequest {
-  notification_type: 'email' | 'mobile_push' | 'web_push' | 'webhook'
+  notification_type: 'email' | 'webhook'
   trigger_event: 'new_jobs' | 'query_complete' | 'system_alert' | 'digest'
   job_count?: number
   query_ids?: number[]
@@ -28,10 +28,8 @@ export interface SendNotificationRequest {
 
 export interface NotificationStatus {
   email_enabled: boolean
-  push_enabled: boolean
   webhook_enabled: boolean
   last_email_sent?: string
-  last_push_sent?: string
   last_webhook_sent?: string
   total_notifications_sent: number
   failed_notifications: number
@@ -70,7 +68,7 @@ export function useNotificationStatus() {
       // Get notification preferences
       const { data: prefs, error: prefsError } = await supabase
         .from('notification_preferences')
-        .select('email_notifications, mobile_push_notifications, webhook_notifications')
+        .select('email_notifications, webhook_notifications')
         .eq('user_id', user.id)
         .single()
 
@@ -88,15 +86,12 @@ export function useNotificationStatus() {
 
       const recentLogs = logs || []
       const emailLogs = recentLogs.filter(log => log.notification_type === 'email')
-      const pushLogs = recentLogs.filter(log => log.notification_type === 'mobile_push')
       const webhookLogs = recentLogs.filter(log => log.notification_type === 'webhook')
 
       const status: NotificationStatus = {
         email_enabled: prefs?.email_notifications ?? true,
-        push_enabled: prefs?.mobile_push_notifications ?? false,
         webhook_enabled: prefs?.webhook_notifications ?? false,
         last_email_sent: emailLogs.find(log => log.status === 'sent')?.sent_at,
-        last_push_sent: pushLogs.find(log => log.status === 'sent')?.sent_at,
         last_webhook_sent: webhookLogs.find(log => log.status === 'sent')?.sent_at,
         total_notifications_sent: recentLogs.filter(log => log.status === 'sent').length,
         failed_notifications: recentLogs.filter(log => log.status === 'failed').length

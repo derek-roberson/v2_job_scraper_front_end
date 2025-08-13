@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { Save, Mail, Smartphone, Webhook, Settings } from 'lucide-react'
+import { Save, Mail, Webhook, Settings } from 'lucide-react'
 
 interface NotificationSettingsProps {
   preferences?: Partial<NotificationPreferences>
@@ -18,7 +18,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   
   // Form state
   const [emailNotifications, setEmailNotifications] = useState(preferences?.email_notifications ?? true)
-  const [mobileNotifications, setMobileNotifications] = useState(preferences?.mobile_push_notifications ?? false)
   const [webhookNotifications, setWebhookNotifications] = useState(preferences?.webhook_notifications ?? false)
   const [webhookUrl, setWebhookUrl] = useState(preferences?.webhook_url || '')
   const [frequency, setFrequency] = useState(preferences?.notification_frequency || 'hourly')
@@ -29,7 +28,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   useEffect(() => {
     if (preferences) {
       setEmailNotifications(preferences.email_notifications ?? true)
-      setMobileNotifications(preferences.mobile_push_notifications ?? false)
       setWebhookNotifications(preferences.webhook_notifications ?? false)
       setWebhookUrl(preferences.webhook_url || '')
       setFrequency(preferences.notification_frequency || 'hourly')
@@ -42,7 +40,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
     try {
       await updateNotificationPreferences.mutateAsync({
         email_notifications: emailNotifications,
-        mobile_push_notifications: mobileNotifications,
         webhook_notifications: webhookNotifications,
         webhook_url: webhookUrl.trim() || undefined,
         notification_frequency: frequency as 'hourly',
@@ -57,7 +54,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
 
   const hasChanges = 
     emailNotifications !== (preferences?.email_notifications ?? true) ||
-    mobileNotifications !== (preferences?.mobile_push_notifications ?? false) ||
     webhookNotifications !== (preferences?.webhook_notifications ?? false) ||
     webhookUrl !== (preferences?.webhook_url || '') ||
     emailDigest !== (preferences?.email_digest ?? false) ||
@@ -89,22 +85,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="mobile-notifications" className="flex items-center gap-2">
-                <Smartphone className="w-4 h-4" />
-                Mobile Push Notifications
-              </Label>
-              <p className="text-sm text-gray-600">
-                Get instant push notifications on your mobile device
-              </p>
-            </div>
-            <Switch
-              id="mobile-notifications"
-              checked={mobileNotifications}
-              onCheckedChange={setMobileNotifications}
-            />
-          </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

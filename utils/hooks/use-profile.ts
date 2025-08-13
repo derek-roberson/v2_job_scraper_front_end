@@ -19,14 +19,11 @@ export interface NotificationPreferences {
   id: number
   user_id: string
   email_notifications: boolean
-  mobile_push_notifications: boolean
   webhook_notifications: boolean
   webhook_url?: string
   webhook_secret?: string
   notification_frequency: 'hourly'
   email_digest: boolean
-  push_subscription_data?: any
-  expo_push_token?: string
   data_sharing_consent: boolean
   created_at: string
   updated_at: string
@@ -39,7 +36,6 @@ export interface UpdateProfileRequest {
 
 export interface UpdateNotificationPreferencesRequest {
   email_notifications?: boolean
-  mobile_push_notifications?: boolean
   webhook_notifications?: boolean
   webhook_url?: string
   notification_frequency?: 'hourly'
@@ -112,7 +108,6 @@ export function useNotificationPreferences() {
           return {
             user_id: user.id,
             email_notifications: true,
-            mobile_push_notifications: false,
             webhook_notifications: false,
             notification_frequency: 'hourly',
             email_digest: false,

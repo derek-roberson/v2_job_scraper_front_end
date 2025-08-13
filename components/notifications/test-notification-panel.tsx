@@ -9,14 +9,14 @@ import { Label } from '@/components/ui/label'
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Mail, Smartphone, Webhook, Send, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Mail, Webhook, Send, CheckCircle, AlertTriangle } from 'lucide-react'
 
 interface TestNotificationPanelProps {
   preferences?: Partial<NotificationPreferences>
 }
 
 export function TestNotificationPanel({ preferences }: TestNotificationPanelProps) {
-  const [selectedType, setSelectedType] = useState<'email' | 'mobile_push' | 'webhook'>('email')
+  const [selectedType, setSelectedType] = useState<'email' | 'webhook'>('email')
   const [testEmail, setTestEmail] = useState('')
   const [testWebhook, setTestWebhook] = useState('')
   const [lastTestResult, setLastTestResult] = useState<{ type: string, success: boolean, message: string } | null>(null)
@@ -30,13 +30,6 @@ export function TestNotificationPanel({ preferences }: TestNotificationPanelProp
       label: 'Email',
       enabled: preferences?.email_notifications ?? true,
       description: 'Send a test email notification'
-    },
-    {
-      type: 'mobile_push' as const,
-      icon: <Smartphone className="w-4 h-4" />,
-      label: 'Push Notification',
-      enabled: preferences?.mobile_push_notifications ?? false,
-      description: 'Send a test push notification to your device'
     },
     {
       type: 'webhook' as const,
@@ -92,7 +85,7 @@ export function TestNotificationPanel({ preferences }: TestNotificationPanelProp
       {/* Type Selection */}
       <div>
         <Label className="text-base font-medium mb-3 block">Notification Type</Label>
-        <div className="grid md:grid-cols-3 gap-3">
+        <div className="grid md:grid-cols-2 gap-3">
           {notificationTypes.map((type) => (
             <Card 
               key={type.type}
@@ -133,19 +126,6 @@ export function TestNotificationPanel({ preferences }: TestNotificationPanelProp
         </div>
       )}
 
-      {selectedType === 'mobile_push' && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Smartphone className="w-4 h-4 text-blue-600" />
-            <span className="font-medium text-blue-900">Push Notification Setup</span>
-          </div>
-          <p className="text-sm text-blue-700">
-            {preferences?.expo_push_token 
-              ? 'Your device is registered for push notifications. Test notification will be sent to your registered device.'
-              : 'No push token registered. You need to enable push notifications in your device settings first.'}
-          </p>
-        </div>
-      )}
 
       {selectedType === 'webhook' && (
         <div className="space-y-3">
@@ -216,7 +196,6 @@ export function TestNotificationPanel({ preferences }: TestNotificationPanelProp
           <li>• Test notifications help verify your delivery settings are working correctly</li>
           <li>• Email tests will show delivery status and any bounce/error messages</li>
           <li>• Webhook tests will show HTTP response codes and delivery confirmation</li>
-          <li>• Push notifications require your device to be registered and online</li>
           <li>• Test notifications are marked with a &quot;test&quot; flag in the logs</li>
         </ul>
       </div>

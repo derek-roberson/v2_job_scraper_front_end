@@ -4,7 +4,7 @@ import { NotificationStatus } from '@/utils/hooks/use-notifications'
 import { NotificationPreferences } from '@/utils/hooks/use-profile'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Mail, Smartphone, Webhook, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react'
+import { Mail, Webhook, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 interface NotificationStatusCardsProps {
@@ -16,8 +16,8 @@ interface NotificationStatusCardsProps {
 export function NotificationStatusCards({ status, preferences, isLoading }: NotificationStatusCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -74,13 +74,6 @@ export function NotificationStatusCards({ status, preferences, isLoading }: Noti
       digest: preferences?.email_digest ?? false
     },
     {
-      title: 'Push Notifications',
-      icon: <Smartphone className="w-5 h-5" />,
-      enabled: status?.push_enabled ?? false,
-      lastSent: status?.last_push_sent,
-      token: preferences?.expo_push_token ? 'Registered' : 'Not registered'
-    },
-    {
       title: 'Webhook Notifications',
       icon: <Webhook className="w-5 h-5" />,
       enabled: status?.webhook_enabled ?? false,
@@ -99,7 +92,7 @@ export function NotificationStatusCards({ status, preferences, isLoading }: Noti
   ]
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Email Card */}
       <Card>
         <CardHeader className="pb-2">
@@ -120,7 +113,7 @@ export function NotificationStatusCards({ status, preferences, isLoading }: Noti
         </CardContent>
       </Card>
 
-      {/* Push Card */}
+      {/* Webhook Card */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -132,27 +125,8 @@ export function NotificationStatusCards({ status, preferences, isLoading }: Noti
           <div className="space-y-2">
             {getStatusBadge(cards[1].enabled ?? false, cards[1].lastSent)}
             <div className="text-xs text-gray-600">
-              <div>Device: {cards[1].token}</div>
+              <div>Endpoint: {cards[1].url}</div>
               <div>Last sent: {formatLastSent(cards[1].lastSent)}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Webhook Card */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-            {cards[2].icon}
-            {cards[2].title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {getStatusBadge(cards[2].enabled ?? false, cards[2].lastSent)}
-            <div className="text-xs text-gray-600">
-              <div>Endpoint: {cards[2].url}</div>
-              <div>Last sent: {formatLastSent(cards[2].lastSent)}</div>
             </div>
           </div>
         </CardContent>
@@ -162,16 +136,16 @@ export function NotificationStatusCards({ status, preferences, isLoading }: Noti
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-            {cards[3].icon}
-            {cards[3].title}
+            {cards[2].icon}
+            {cards[2].title}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <div className="text-2xl font-bold">{cards[3].successRate}%</div>
+            <div className="text-2xl font-bold">{cards[2].successRate}%</div>
             <div className="text-xs text-gray-600">
-              <div>{cards[3].sent} sent</div>
-              <div>{cards[3].failed} failed</div>
+              <div>{cards[2].sent} sent</div>
+              <div>{cards[2].failed} failed</div>
               <div>Success rate</div>
             </div>
           </div>
