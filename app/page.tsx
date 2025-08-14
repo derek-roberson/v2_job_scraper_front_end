@@ -3,8 +3,10 @@
 import { useAuth } from '@/utils/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Clock, Mail, Target, Zap, CheckCircle, Users } from 'lucide-react'
 
 export default function LandingPage() {
   const { isAuthenticated, loading } = useAuth()
@@ -22,15 +24,20 @@ export default function LandingPage() {
       {/* Header */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
-          <div className="text-2xl font-bold text-gray-900">
-            Job Alerts
+          <div className="flex items-center space-x-2">
+            <div className="text-2xl font-bold text-gray-900">
+              JobFirst
+            </div>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+              Beta
+            </Badge>
           </div>
           <div className="space-x-4">
             <Link href="/login">
               <Button variant="ghost" className="bg-white/70 hover:bg-white border border-gray-200 text-gray-700 hover:text-gray-900">Sign In</Button>
             </Link>
             <Link href="/login?mode=signup">
-              <Button>Get Started</Button>
+              <Button>Get Started Free</Button>
             </Link>
           </div>
         </nav>
@@ -39,93 +46,174 @@ export default function LandingPage() {
       {/* Hero Section */}
       <main className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto">
+          <div className="flex justify-center mb-6">
+            <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 text-sm font-medium">
+              <Zap className="w-4 h-4 mr-2" />
+              Be Among the First 20 Applicants
+            </Badge>
+          </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Automate Your Job Search with{' '}
-            <span className="text-blue-600">Professional Intelligence</span>
+            Get LinkedIn Job Alerts{' '}
+            <span className="text-blue-600">Before Everyone Else</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Professional job search automation with real-time LinkedIn scraping, 
-            intelligent notifications, and comprehensive analytics. Never miss the 
-            perfect opportunity again.
+            Set up custom job search queries and get hourly email alerts for new LinkedIn postings. 
+            Apply early, stand out from the crowd, and land your dream job faster.
           </p>
+          
+          {/* Social Proof */}
+          <div className="flex justify-center items-center space-x-6 mb-8 text-sm text-gray-600">
+            <div className="flex items-center">
+              <Users className="w-4 h-4 mr-1" />
+              <span>2,000+ active job seekers</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
+              <span>Average 3 min faster applications</span>
+            </div>
+          </div>
+
           <div className="space-x-4">
             <Link href="/login?mode=signup">
               <Button size="lg" className="px-8 py-3">
-                Start Free Trial
+                Start Getting Alerts Free
               </Button>
             </Link>
             <Button variant="outline" size="lg" className="px-8 py-3">
-              Watch Demo
+              See How It Works
             </Button>
           </div>
         </div>
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-8 mt-20">
-          <Card>
+          <Card className="border-2 hover:border-blue-200 transition-colors">
             <CardHeader>
-              <CardTitle className="text-xl">Real-time Job Scraping</CardTitle>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <Clock className="w-6 h-6 text-blue-600" />
+              </div>
+              <CardTitle className="text-xl">Hourly Job Alerts</CardTitle>
               <CardDescription>
-                Automated LinkedIn job discovery with intelligent filtering
+                Get notified the moment new jobs are posted
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Set up custom search queries and let our system continuously 
-                monitor for new opportunities that match your criteria.
+                Receive consolidated email alerts every hour with all new LinkedIn jobs 
+                matching your search criteria. No spam - just the latest opportunities.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 hover:border-blue-200 transition-colors">
             <CardHeader>
-              <CardTitle className="text-xl">Smart Notifications</CardTitle>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <Target className="w-6 h-6 text-green-600" />
+              </div>
+              <CardTitle className="text-xl">Custom Search Queries</CardTitle>
               <CardDescription>
-                Get instant alerts for the jobs that matter most
+                Personalized job search tailored to your needs
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Receive real-time notifications via email, SMS, or in-app alerts 
-                when new jobs match your specific requirements.
+                Create multiple search queries with specific keywords, locations, and 
+                job types. Monitor different career paths simultaneously.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-2 hover:border-blue-200 transition-colors">
             <CardHeader>
-              <CardTitle className="text-xl">Analytics Dashboard</CardTitle>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <Mail className="w-6 h-6 text-purple-600" />
+              </div>
+              <CardTitle className="text-xl">Smart Scheduling</CardTitle>
               <CardDescription>
-                Track your job search performance with detailed insights
+                Control when and how often you get alerts
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Monitor search trends, success rates, and optimize your job search 
-                strategy with comprehensive analytics.
+                Choose hourly alerts or customize specific hours when you want to receive 
+                notifications. Perfect for maintaining work-life balance.
               </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* How It Works Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Start getting early access to new job postings in just 3 simple steps
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+                1
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Create Your Search</h3>
+              <p className="text-gray-600">
+                Sign up and define your job search criteria with keywords, locations, and preferences.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+                2
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Get Hourly Alerts</h3>
+              <p className="text-gray-600">
+                Receive email notifications with new job postings that match your criteria every hour.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+                3
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Apply First</h3>
+              <p className="text-gray-600">
+                Click through to LinkedIn and be among the first 20 applicants for competitive positions.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* CTA Section */}
         <div className="text-center mt-20">
-          <Card className="max-w-2xl mx-auto">
+          <Card className="max-w-2xl mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
             <CardHeader>
-              <CardTitle className="text-3xl">Ready to Transform Your Job Search?</CardTitle>
+              <CardTitle className="text-3xl">Start Getting Early Job Alerts Today</CardTitle>
               <CardDescription className="text-lg">
-                Join thousands of professionals who have automated their way to success.
+                Join job seekers who are landing interviews faster with early application advantages.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/login?mode=signup">
-                <Button size="lg" className="w-full">
-                  Get Started Now - Free Trial
+                <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700">
+                  Create Your First Job Alert - Free
                 </Button>
               </Link>
               <p className="text-sm text-gray-500 mt-4">
-                No credit card required • 14-day free trial • Cancel anytime
+                Free forever • No credit card required • Setup in under 2 minutes
               </p>
+              
+              {/* Additional trust indicators */}
+              <div className="flex justify-center items-center space-x-6 mt-6 text-sm text-gray-600">
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
+                  <span>Email verified accounts only</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
+                  <span>No spam guarantee</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -135,10 +223,17 @@ export default function LandingPage() {
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <div className="text-2xl font-bold mb-4">Job Alerts</div>
-            <p className="text-gray-400">
-              Professional job search automation platform
+            <div className="text-2xl font-bold mb-4">JobFirst</div>
+            <p className="text-gray-400 mb-6">
+              Get early access to LinkedIn job postings with smart hourly alerts
             </p>
+            <div className="flex justify-center space-x-8 text-sm text-gray-400">
+              <span>Early application advantage</span>
+              <span>•</span>
+              <span>Custom notification scheduling</span>
+              <span>•</span>
+              <span>No spam guarantee</span>
+            </div>
           </div>
         </div>
       </footer>
