@@ -1,0 +1,3 @@
+Creating shadow database...
+Diffing schemas: public
+Finished supabase db pull.
