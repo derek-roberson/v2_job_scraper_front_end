@@ -20,6 +20,13 @@ export function useJobs(filters?: JobFilters) {
         .eq('user_id', user.id)
         .eq('is_deleted', false)
 
+      // Apply applied filter
+      if (filters?.appliedOnly) {
+        query = query.eq('applied', true)
+      } else if (filters?.showApplied === false) {
+        query = query.eq('applied', false)
+      }
+
       // Apply filters
       if (filters?.search) {
         query = query.or(`title.ilike.%${filters.search}%,company.ilike.%${filters.search}%`)
@@ -80,7 +87,24 @@ export function useJobMutations() {
     },
   })
 
-  return { softDeleteJob }
+  const markJobAsApplied = useMutation({
+    mutationFn: async ({ jobId, applied }: { jobId: number; applied: boolean }) => {
+      if (!user?.id) throw new Error('User not authenticated')
+      
+      const { error } = await supabase
+        .from('jobs')
+        .update({ applied })
+        .eq('id', jobId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+    },
+  })
+
+  return { softDeleteJob, markJobAsApplied }
 }
 
 export function useJobStats() {

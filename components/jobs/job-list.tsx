@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { JobDetailModal } from './job-detail-modal'
 import { useJobMutations } from '@/utils/hooks/use-jobs'
-import { ExternalLink, MapPin, Calendar, Building2, Trash2 } from 'lucide-react'
+import { ExternalLink, MapPin, Calendar, Building2, Trash2, Check, RotateCcw } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 interface JobListProps {
@@ -16,7 +16,7 @@ interface JobListProps {
 
 export function JobList({ jobs }: JobListProps) {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-  const { softDeleteJob } = useJobMutations()
+  const { softDeleteJob, markJobAsApplied } = useJobMutations()
 
   const handleDeleteJob = async (jobId: number) => {
     if (confirm('Are you sure you want to remove this job from your list?')) {
@@ -25,6 +25,14 @@ export function JobList({ jobs }: JobListProps) {
       } catch (error) {
         console.error('Failed to delete job:', error)
       }
+    }
+  }
+
+  const handleMarkAsApplied = async (jobId: number, applied: boolean) => {
+    try {
+      await markJobAsApplied.mutateAsync({ jobId, applied })
+    } catch (error) {
+      console.error('Failed to update job application status:', error)
     }
   }
 
@@ -55,11 +63,18 @@ export function JobList({ jobs }: JobListProps) {
     <>
       <div className="space-y-4">
         {jobs.map((job) => (
-          <Card key={job.id} className="hover:shadow-md transition-shadow">
+          <Card key={job.id} className={`hover:shadow-md transition-shadow ${job.applied ? 'bg-green-50 border-green-200' : ''}`}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-lg mb-1">{job.title}</CardTitle>
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle className="text-lg">{job.title}</CardTitle>
+                    {job.applied && (
+                      <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-xs">
+                        Applied
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription className="flex items-center gap-4 text-sm">
                     <span className="flex items-center gap-1">
                       <Building2 className="w-4 h-4" />
@@ -111,6 +126,31 @@ export function JobList({ jobs }: JobListProps) {
                   >
                     View Details
                   </Button>
+                  
+                  {job.applied ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleMarkAsApplied(job.id, false)}
+                      disabled={markJobAsApplied.isPending}
+                      className="flex items-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Mark as Not Applied
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleMarkAsApplied(job.id, true)}
+                      disabled={markJobAsApplied.isPending}
+                      className="flex items-center gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      Mark as Applied
+                    </Button>
+                  )}
+                  
                   {job.link && (
                     <Button
                       size="sm"
@@ -118,7 +158,7 @@ export function JobList({ jobs }: JobListProps) {
                       className="flex items-center gap-2"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      Apply
+                      {job.applied ? 'View Job' : 'Apply'}
                     </Button>
                   )}
                 </div>

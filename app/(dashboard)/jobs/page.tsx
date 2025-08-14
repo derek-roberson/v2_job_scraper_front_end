@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { JobList } from '@/components/jobs/job-list'
 import { JobFilters } from '@/types/api'
 import { Search, Filter } from 'lucide-react'
@@ -16,6 +18,8 @@ export default function JobsPage() {
   const [selectedQueryId, setSelectedQueryId] = useState<number | undefined>()
   const [sortBy, setSortBy] = useState<'posted' | 'company' | 'title'>('posted')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [showAppliedJobs, setShowAppliedJobs] = useState(false)
+  const [appliedOnlyFilter, setAppliedOnlyFilter] = useState(false)
 
   // Get user queries for filtering
   const { data: queries = [] } = useQueries()
@@ -26,8 +30,10 @@ export default function JobsPage() {
     queryId: selectedQueryId,
     sortBy,
     sortOrder,
+    showApplied: showAppliedJobs,
+    appliedOnly: appliedOnlyFilter,
     limit: 50
-  }), [search, selectedQueryId, sortBy, sortOrder])
+  }), [search, selectedQueryId, sortBy, sortOrder, showAppliedJobs, appliedOnlyFilter])
 
   // Get jobs and stats
   const { data: jobs = [], isLoading, error } = useJobs(filters)
@@ -38,6 +44,8 @@ export default function JobsPage() {
     setSelectedQueryId(undefined)
     setSortBy('posted')
     setSortOrder('desc')
+    setShowAppliedJobs(false)
+    setAppliedOnlyFilter(false)
   }
 
   return (
@@ -165,9 +173,48 @@ export default function JobsPage() {
             </Select>
           </div>
 
-          <Button variant="outline" onClick={clearFilters}>
-            Clear Filters
-          </Button>
+          {/* Applied Job Filters */}
+          <div className="flex items-center gap-6 pt-4 border-t">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-applied"
+                checked={showAppliedJobs}
+                onCheckedChange={(checked) => {
+                  setShowAppliedJobs(checked)
+                  if (!checked) setAppliedOnlyFilter(false)
+                }}
+              />
+              <Label htmlFor="show-applied" className="text-sm">
+                Show applied jobs
+              </Label>
+            </div>
+            
+            {showAppliedJobs && (
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="applied-only"
+                  checked={appliedOnlyFilter}
+                  onCheckedChange={setAppliedOnlyFilter}
+                />
+                <Label htmlFor="applied-only" className="text-sm">
+                  Show only applied jobs
+                </Label>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-between items-center pt-4">
+            <Button variant="outline" onClick={clearFilters}>
+              Clear Filters
+            </Button>
+            <div className="text-sm text-gray-600">
+              {!showAppliedJobs && (
+                <span className="text-amber-600">
+                  🙈 Applied jobs are hidden by default
+                </span>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

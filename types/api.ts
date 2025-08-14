@@ -21,6 +21,8 @@ export interface JobFilters {
   dateRange?: { from: Date; to: Date }
   sortBy: 'posted' | 'company' | 'title'
   sortOrder: 'asc' | 'desc'
+  showApplied?: boolean
+  appliedOnly?: boolean
   limit?: number
   offset?: number
 }
@@ -78,6 +80,7 @@ export interface Job {
   posted?: string
   scraped_at?: string
   is_deleted: boolean
+  applied: boolean
   created_at: string
   description?: string
   salary?: string
