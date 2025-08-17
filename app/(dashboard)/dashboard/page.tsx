@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/utils/hooks/use-auth'
 import { useQueries, useQueryMutations } from '@/utils/hooks/use-queries'
+import { useJobStats } from '@/utils/hooks/use-jobs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CreateQueryForm } from '@/components/queries/create-query-form'
@@ -15,6 +16,7 @@ export default function DashboardPage() {
   // Use actual query hooks
   const { data: queries = [], isLoading } = useQueries()
   const { createQuery, updateQuery, deleteQuery } = useQueryMutations()
+  const { data: jobStats } = useJobStats()
 
   const handleCreateQuery = async (data: {
     keywords: string
@@ -79,24 +81,24 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Total Queries
+              Jobs Found Today
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{queries.length}</div>
-            <p className="text-xs text-gray-600">Search configurations</p>
+            <div className="text-2xl font-bold">{jobStats?.todayJobs || 0}</div>
+            <p className="text-xs text-gray-600">New opportunities today</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Jobs Found
+              Total Jobs
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-gray-600">Total opportunities discovered</p>
+            <div className="text-2xl font-bold">{jobStats?.totalJobs || 0}</div>
+            <p className="text-xs text-gray-600">All opportunities found</p>
           </CardContent>
         </Card>
 
@@ -107,8 +109,12 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
-            <p className="text-xs text-gray-600">Query effectiveness</p>
+            <div className="text-2xl font-bold">
+              {queries.length > 0 && jobStats?.uniqueQueries
+                ? `${Math.round((jobStats.uniqueQueries / queries.length) * 100)}%`
+                : '0%'}
+            </div>
+            <p className="text-xs text-gray-600">Queries with results</p>
           </CardContent>
         </Card>
       </div>
