@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/utils/hooks/use-auth'
 import { useUserProfile } from '@/utils/hooks/use-profile'
+import { useSubscription } from '@/utils/hooks/use-subscription'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -18,6 +19,7 @@ export default function DashboardLayout({
 }) {
   const { user, loading, signOut, isAuthenticated } = useAuth()
   const { data: userProfile } = useUserProfile()
+  const { data: subscription } = useSubscription()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -94,6 +96,17 @@ export default function DashboardLayout({
               >
                 <NotificationIndicator />
                 <span className="ml-2">Notifications (Admin)</span>
+              </Button>
+            </Link>
+          )}
+          {/* Hide pricing for privileged users */}
+          {!subscription?.isPrivileged && (
+            <Link href="/pricing" onClick={() => setSidebarOpen(false)}>
+              <Button 
+                variant={isActivePath('/pricing') ? 'default' : 'ghost'} 
+                className="w-full justify-start"
+              >
+                Pricing
               </Button>
             </Link>
           )}

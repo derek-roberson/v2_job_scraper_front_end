@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { ProfileSettings } from '@/components/settings/profile-settings'
 import { NotificationSettings } from '@/components/settings/notification-settings'
 import { AccountInfo } from '@/components/settings/account-info'
+import { SubscriptionManager } from '@/components/subscription/subscription-manager'
 import { useQueryClient } from '@tanstack/react-query'
 import { User, Bell, Shield, CreditCard, RefreshCw } from 'lucide-react'
 
@@ -147,60 +148,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Subscription & Billing */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Subscription & Billing
-          </CardTitle>
-          <CardDescription>
-            Manage your subscription and billing preferences
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium">Current Plan</h4>
-                <p className="text-sm text-gray-600">
-                  {profile?.subscription_tier === 'free' ? 'Free Plan' : 
-                   profile?.subscription_tier === 'basic' ? 'Basic Plan' : 'Premium Plan'}
-                </p>
-              </div>
-              <Badge variant={profile?.subscription_tier === 'free' ? 'secondary' : 'default'}>
-                {profile?.subscription_tier?.toUpperCase()}
-              </Badge>
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium">Query Limit</h4>
-                <p className="text-sm text-gray-600">
-                  {profile?.max_active_queries === -1 
-                    ? 'Unlimited active queries' 
-                    : `${profile?.max_active_queries} active queries max`}
-                </p>
-              </div>
-            </div>
-
-            {profile?.subscription_tier === 'free' && (
-              <>
-                <Separator />
-                <div className="text-center py-4">
-                  <Button>
-                    Upgrade to Premium
-                  </Button>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Get unlimited queries and priority support
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <SubscriptionManager />
     </div>
   )
 }

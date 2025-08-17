@@ -2,6 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useCanResumeQuery } from '@/utils/hooks/use-subscription'
+import { AlertCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface Query {
   id: number
@@ -26,6 +29,9 @@ const workTypeNames = {
 }
 
 export function QueryList({ queries, onToggle, onDelete, loading }: QueryListProps) {
+  const router = useRouter()
+  const { canResume, reason, needsUpgrade } = useCanResumeQuery()
+  
   if (queries.length === 0) {
     return (
       <Card>
@@ -79,23 +85,47 @@ export function QueryList({ queries, onToggle, onDelete, loading }: QueryListPro
               </div>
             </div>
             
-            <div className="flex gap-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onToggle(query.id, !query.is_active)}
-                disabled={loading}
-              >
-                {query.is_active ? 'Pause' : 'Resume'}
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => onDelete(query.id)}
-                disabled={loading}
-              >
-                Delete
-              </Button>
+            <div className="space-y-2 mt-4">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (!canResume && !query.is_active) {
+                      alert(reason)
+                      return
+                    }
+                    onToggle(query.id, !query.is_active)
+                  }}
+                  disabled={loading || (!canResume && !query.is_active)}
+                >
+                  {query.is_active ? 'Pause' : 'Resume'}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDelete(query.id)}
+                  disabled={loading}
+                >
+                  Delete
+                </Button>
+              </div>
+              
+              {!canResume && !query.is_active && needsUpgrade && (
+                <div className="flex items-start gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <p className="text-yellow-800">{reason}</p>
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-yellow-700 underline text-xs"
+                      onClick={() => router.push('/pricing')}
+                    >
+                      Upgrade to Pro
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

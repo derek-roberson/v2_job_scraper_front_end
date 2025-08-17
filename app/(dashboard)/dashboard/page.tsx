@@ -1,15 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/utils/hooks/use-auth'
 import { useQueries, useQueryMutations } from '@/utils/hooks/use-queries'
 import { useJobStats } from '@/utils/hooks/use-jobs'
+import { useCanCreateQuery, useSubscription } from '@/utils/hooks/use-subscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { CreateQueryForm } from '@/components/queries/create-query-form'
 import { QueryList } from '@/components/queries/query-list'
+import { AlertCircle } from 'lucide-react'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { user } = useAuth()
   const [showCreateForm, setShowCreateForm] = useState(false)
   
@@ -17,6 +22,8 @@ export default function DashboardPage() {
   const { data: queries = [], isLoading } = useQueries()
   const { createQuery, updateQuery, deleteQuery } = useQueryMutations()
   const { data: jobStats } = useJobStats()
+  const { data: canCreate } = useCanCreateQuery()
+  const { data: subscription } = useSubscription()
 
   const handleCreateQuery = async (data: {
     keywords: string
@@ -63,6 +70,69 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-gray-600">Welcome back, {user?.email}</p>
       </div>
+
+      {/* Trial/Subscription Status Banner */}
+      {subscription && (
+        <>
+          {subscription.isPrivileged && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-green-900">
+                    Welcome! You have privileged access
+                  </p>
+                  <p className="text-sm text-green-700 mt-1">
+                    All features are available to you without any subscription requirements.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!subscription.isPrivileged && subscription.isTrial && subscription.trialEndsAt && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-blue-900">
+                    You're on a free trial of the Pro plan
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Your trial ends on {new Date(subscription.trialEndsAt).toLocaleDateString()}. 
+                    After that, you'll be moved to the Free plan unless you upgrade.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!subscription.isPrivileged && subscription.planId === 'free' && !subscription.isTrial && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-yellow-900">
+                      You're on the Free plan
+                    </p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      You can view previously fetched jobs but cannot create or resume queries.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => router.push('/pricing')}
+                  className="ml-4"
+                >
+                  Upgrade to Pro
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Stats Cards */}
       <div className="grid md:grid-cols-4 gap-6">
@@ -132,13 +202,53 @@ export default function DashboardPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Create New Query</CardTitle>
-                <CardDescription>
-                  Set up automated job search with your criteria
-                </CardDescription>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle>Create New Query</CardTitle>
+                    <CardDescription>
+                      Set up automated job search with your criteria
+                    </CardDescription>
+                  </div>
+                  {subscription && (
+                    <Badge variant={subscription.planId === 'free' ? 'secondary' : 'default'}>
+                      {subscription.planName}
+                    </Badge>
+                  )}
+                </div>
               </CardHeader>
-              <CardContent>
-                <Button onClick={() => setShowCreateForm(true)}>
+              <CardContent className="space-y-4">
+                {canCreate && !canCreate.canCreate && !subscription?.isPrivileged && (
+                  <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-yellow-800">{canCreate.reason}</p>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-yellow-700 underline"
+                        onClick={() => router.push('/pricing')}
+                      >
+                        Upgrade your plan
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {subscription && !subscription.isPrivileged && subscription.maxQueries !== -1 && canCreate?.remaining !== undefined && (
+                  <p className="text-sm text-gray-600">
+                    You can create {canCreate.remaining} more {canCreate.remaining === 1 ? 'query' : 'queries'} on your {subscription.planName} plan
+                  </p>
+                )}
+                
+                {subscription?.isPrivileged && (
+                  <p className="text-sm text-green-600">
+                    ✓ Unlimited queries available with your privileged access
+                  </p>
+                )}
+                
+                <Button 
+                  onClick={() => setShowCreateForm(true)}
+                  disabled={canCreate && !canCreate.canCreate}
+                >
                   Create Query
                 </Button>
               </CardContent>
