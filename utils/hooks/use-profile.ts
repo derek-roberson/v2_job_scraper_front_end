@@ -27,6 +27,7 @@ export interface NotificationPreferences {
   data_sharing_consent: boolean
   notification_hours: number[]
   respect_notification_hours: boolean
+  timezone?: string
   created_at: string
   updated_at: string
 }
@@ -45,6 +46,7 @@ export interface UpdateNotificationPreferencesRequest {
   data_sharing_consent?: boolean
   notification_hours?: number[]
   respect_notification_hours?: boolean
+  timezone?: string
 }
 
 export function useUserProfile() {
@@ -117,7 +119,7 @@ export function useNotificationPreferences() {
             email_digest: false,
             data_sharing_consent: false,
             notification_hours: [9, 10, 11, 12, 13, 14, 15, 16, 17],
-            respect_notification_hours: true,
+            respect_notification_hours: false,
           } as Partial<NotificationPreferences>
         }
         throw error

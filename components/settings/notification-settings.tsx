@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Save, Mail, Webhook, Settings, Clock } from 'lucide-react'
+import { TimezoneSelect } from '@/components/ui/timezone-select'
+import { Save, Mail, Webhook, Settings, Clock, Globe, AlertCircle } from 'lucide-react'
 
 interface NotificationSettingsProps {
   preferences?: Partial<NotificationPreferences>
@@ -24,8 +25,10 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   const [frequency, setFrequency] = useState(preferences?.notification_frequency || 'hourly')
   const [emailDigest, setEmailDigest] = useState(preferences?.email_digest ?? false)
   const [dataSharing, setDataSharing] = useState(preferences?.data_sharing_consent ?? false)
-  const [respectNotificationHours, setRespectNotificationHours] = useState(preferences?.respect_notification_hours ?? true)
+  const [respectNotificationHours, setRespectNotificationHours] = useState(preferences?.respect_notification_hours ?? false)
   const [notificationHours, setNotificationHours] = useState<number[]>(preferences?.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17])
+  const [timezone, setTimezone] = useState(preferences?.timezone || '')
+  const [timezoneError, setTimezoneError] = useState('')
 
   // Update form when preferences change
   useEffect(() => {
@@ -36,8 +39,9 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
       setFrequency(preferences.notification_frequency || 'hourly')
       setEmailDigest(preferences.email_digest ?? false)
       setDataSharing(preferences.data_sharing_consent ?? false)
-      setRespectNotificationHours(preferences.respect_notification_hours ?? true)
+      setRespectNotificationHours(preferences.respect_notification_hours ?? false)
       setNotificationHours(preferences.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17])
+      setTimezone(preferences.timezone || '')
     }
   }, [preferences])
 
@@ -69,6 +73,14 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   }
 
   const handleSave = async () => {
+    // Validate timezone if notification hours are set
+    if (respectNotificationHours && !timezone) {
+      setTimezoneError('Please select a timezone to use specific notification hours')
+      return
+    }
+    
+    setTimezoneError('')
+    
     try {
       await updateNotificationPreferences.mutateAsync({
         email_notifications: emailNotifications,
@@ -79,6 +91,7 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
         data_sharing_consent: dataSharing,
         notification_hours: notificationHours,
         respect_notification_hours: respectNotificationHours,
+        timezone: timezone || undefined,
       })
     } catch (error) {
       console.error('Failed to update notification preferences:', error)
@@ -92,7 +105,8 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
     webhookUrl !== (preferences?.webhook_url || '') ||
     emailDigest !== (preferences?.email_digest ?? false) ||
     dataSharing !== (preferences?.data_sharing_consent ?? false) ||
-    respectNotificationHours !== (preferences?.respect_notification_hours ?? true) ||
+    respectNotificationHours !== (preferences?.respect_notification_hours ?? false) ||
+    timezone !== (preferences?.timezone || '') ||
     JSON.stringify(notificationHours.sort()) !== JSON.stringify((preferences?.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17]).sort())
 
   return (
@@ -183,9 +197,33 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
           {respectNotificationHours && (
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  Timezone
+                </Label>
+                <TimezoneSelect
+                  value={timezone}
+                  onValueChange={(value) => {
+                    setTimezone(value)
+                    setTimezoneError('')
+                  }}
+                  placeholder="Select your timezone"
+                />
+                {timezoneError && (
+                  <div className="flex items-center gap-2 text-sm text-red-600">
+                    <AlertCircle className="w-4 h-4" />
+                    {timezoneError}
+                  </div>
+                )}
+                <p className="text-sm text-gray-600">
+                  Required for scheduling notifications at specific hours
+                </p>
+              </div>
+              
+              <div className="space-y-2">
                 <Label>Select Hours for Notifications</Label>
                 <p className="text-sm text-gray-600">
-                  Choose the hours when you want to receive job notifications. Jobs found during other hours will be queued.
+                  Choose the hours when you want to receive job notifications in your timezone. Jobs found during other hours will be queued.
                 </p>
                 <div className="flex gap-2 mb-3">
                   <Button
