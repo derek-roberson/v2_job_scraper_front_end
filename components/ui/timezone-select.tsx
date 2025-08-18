@@ -8,15 +8,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export const USA_TIMEZONES = [
+export const TIMEZONES = [
+  { value: 'UTC', label: 'UTC (Coordinated Universal Time)', abbr: 'UTC' },
   { value: 'America/New_York', label: 'Eastern Time (ET)', abbr: 'EST/EDT' },
   { value: 'America/Chicago', label: 'Central Time (CT)', abbr: 'CST/CDT' },
   { value: 'America/Denver', label: 'Mountain Time (MT)', abbr: 'MST/MDT' },
-  { value: 'America/Phoenix', label: 'Mountain Time - Arizona (MT)', abbr: 'MST' },
   { value: 'America/Los_Angeles', label: 'Pacific Time (PT)', abbr: 'PST/PDT' },
-  { value: 'America/Anchorage', label: 'Alaska Time (AKT)', abbr: 'AKST/AKDT' },
-  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)', abbr: 'HST' },
-  { value: 'America/Puerto_Rico', label: 'Atlantic Time (AT)', abbr: 'AST' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKST)', abbr: 'AKST/AKDT' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HST)', abbr: 'HST' },
+  { value: 'America/Puerto_Rico', label: 'Atlantic Time (AST)', abbr: 'AST' },
+  { value: 'Pacific/Guam', label: 'Guam Time', abbr: 'ChST' },
+  { value: 'Pacific/Saipan', label: 'Northern Mariana Islands Time', abbr: 'ChST' },
 ] as const
 
 interface TimezoneSelectProps {
@@ -38,7 +40,7 @@ export function TimezoneSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {USA_TIMEZONES.map((tz) => (
+        {TIMEZONES.map((tz) => (
           <SelectItem key={tz.value} value={tz.value}>
             <div className="flex items-center justify-between w-full">
               <span>{tz.label}</span>

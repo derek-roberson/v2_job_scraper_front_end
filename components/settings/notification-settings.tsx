@@ -26,7 +26,7 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   const [dataSharing, setDataSharing] = useState(preferences?.data_sharing_consent ?? false)
   const [respectNotificationHours, setRespectNotificationHours] = useState(preferences?.respect_notification_hours ?? false)
   const [notificationHours, setNotificationHours] = useState<number[]>(preferences?.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17])
-  const [timezone, setTimezone] = useState(preferences?.timezone || '')
+  const [timezone, setTimezone] = useState(preferences?.timezone || 'UTC')
   const [timezoneError, setTimezoneError] = useState('')
 
   // Update form when preferences change
@@ -39,7 +39,7 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
       setDataSharing(preferences.data_sharing_consent ?? false)
       setRespectNotificationHours(preferences.respect_notification_hours ?? false)
       setNotificationHours(preferences.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17])
-      setTimezone(preferences.timezone || '')
+      setTimezone(preferences.timezone || 'UTC')
     }
   }, [preferences])
 
@@ -88,7 +88,7 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
         data_sharing_consent: dataSharing,
         notification_hours: notificationHours,
         respect_notification_hours: respectNotificationHours,
-        timezone: timezone || undefined,
+        timezone: timezone || 'UTC',
       })
     } catch (error) {
       console.error('Failed to update notification preferences:', error)
@@ -102,7 +102,7 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
     webhookUrl !== (preferences?.webhook_url || '') ||
     dataSharing !== (preferences?.data_sharing_consent ?? false) ||
     respectNotificationHours !== (preferences?.respect_notification_hours ?? false) ||
-    timezone !== (preferences?.timezone || '') ||
+    timezone !== (preferences?.timezone || 'UTC') ||
     JSON.stringify(notificationHours.sort()) !== JSON.stringify((preferences?.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17]).sort())
 
   return (
