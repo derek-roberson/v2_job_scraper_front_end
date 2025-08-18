@@ -22,24 +22,72 @@ export default function ResetPasswordPage() {
   const [checkingToken, setCheckingToken] = useState(true)
 
   useEffect(() => {
-    // Check for recovery token in URL hash
+    // Check for recovery token in URL
     const checkRecoveryToken = async () => {
-      // Get the hash from the URL (Supabase sends tokens in the hash)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const accessToken = hashParams.get('access_token')
-      const type = hashParams.get('type')
+      // Get token from URL params (if coming from custom email template)
+      const urlParams = new URLSearchParams(window.location.search)
+      const token = urlParams.get('token')
+      const type = urlParams.get('type')
       
-      // Check if this is a recovery type token
-      if (type === 'recovery' && accessToken) {
-        // We have a valid recovery token
-        setIsValidToken(true)
+      // Get token from URL hash (if coming from default Supabase redirect)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const hashToken = hashParams.get('access_token')
+      const hashType = hashParams.get('type')
+      
+      // Check if this is a recovery type token from either source
+      if ((type === 'recovery' && token) || (hashType === 'recovery' && hashToken)) {
+        // Sign out any existing session to prevent auto-login
+        await supabase.auth.signOut()
+        
+        // For hash-based tokens (from default Supabase redirect)
+        if (hashType === 'recovery' && hashToken) {
+          try {
+            // Set the session with the recovery token
+            const { error } = await supabase.auth.setSession({
+              access_token: hashToken,
+              refresh_token: hashParams.get('refresh_token') || ''
+            })
+            
+            if (!error) {
+              setIsValidToken(true)
+            } else {
+              setError('Invalid or expired reset link. Please request a new password reset.')
+              setIsValidToken(false)
+            }
+          } catch (err) {
+            setError('Invalid or expired reset link. Please request a new password reset.')
+            setIsValidToken(false)
+          }
+        } 
+        // For query param tokens (from custom email template)
+        else if (type === 'recovery' && token) {
+          try {
+            // Verify the token by calling Supabase's verify endpoint
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'recovery'
+            })
+            
+            if (!error && data.user) {
+              setIsValidToken(true)
+              // Store the session temporarily for password update
+              window.sessionStorage.setItem('recovery_session', JSON.stringify(data.session))
+            } else {
+              setError('Invalid or expired reset link. Please request a new password reset.')
+              setIsValidToken(false)
+            }
+          } catch (err) {
+            setError('Invalid or expired reset link. Please request a new password reset.')
+            setIsValidToken(false)
+          }
+        }
         setCheckingToken(false)
       } else {
-        // Check if user is already logged in with a recovery session
-        const { data: { session }, error } = await supabase.auth.getSession()
+        // Check if user has an active recovery session
+        const { data: { session } } = await supabase.auth.getSession()
         
-        if (session?.user?.recovery_sent_at) {
-          // User has a recovery session
+        if (session?.user?.aud === 'authenticated' && session.user.email) {
+          // User is logged in, probably from clicking the reset link
           setIsValidToken(true)
         } else {
           setError('Invalid or expired reset link. Please request a new password reset.')
@@ -79,6 +127,14 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
+      // Check if we have a stored recovery session
+      const storedSession = window.sessionStorage.getItem('recovery_session')
+      if (storedSession) {
+        const session = JSON.parse(storedSession)
+        // Set the session temporarily to update the password
+        await supabase.auth.setSession(session)
+      }
+
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       })
@@ -87,6 +143,8 @@ export default function ResetPasswordPage() {
         setError(updateError.message)
       } else {
         setSuccess(true)
+        // Clean up stored session
+        window.sessionStorage.removeItem('recovery_session')
         // Sign out the user to force them to login with new password
         await supabase.auth.signOut()
         // Redirect to login after 2 seconds
