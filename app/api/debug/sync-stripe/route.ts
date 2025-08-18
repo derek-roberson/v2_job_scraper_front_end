@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { stripe, isStripeConfigured } from '@/utils/stripe'
 import Stripe from 'stripe'
 
@@ -12,7 +12,12 @@ type StripeSubscriptionWithPeriod = Stripe.Subscription & {
 }
 
 // Helper function to sync subscription data
-async function syncSubscriptionData(user: any, customer: any, subscriptions: Stripe.Subscription[], supabase: any) {
+async function syncSubscriptionData(
+  user: { id: string; email?: string }, 
+  customer: Stripe.Customer, 
+  subscriptions: Stripe.Subscription[], 
+  supabase: SupabaseClient
+) {
   if (subscriptions.length === 0) {
     return NextResponse.json({ 
       error: 'No subscriptions found',
@@ -131,9 +136,15 @@ export async function POST(req: NextRequest) {
       console.log('Found subscription, using customer:', customerId)
       
       // Get customer details
-      const customer = await stripe.customers.retrieve(customerId)
+      const customerResponse = await stripe.customers.retrieve(customerId)
       
-      return await syncSubscriptionData(user, customer, userSubscriptions, supabase)
+      if (customerResponse.deleted) {
+        return NextResponse.json({ 
+          error: 'Customer was deleted' 
+        }, { status: 404 })
+      }
+      
+      return await syncSubscriptionData(user, customerResponse, userSubscriptions, supabase)
     }
 
     // Find Stripe customer by email

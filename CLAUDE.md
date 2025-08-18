@@ -78,3 +78,4 @@ The application will include:
 - Currently has default Next.js starter content that will be replaced
 - The `frontend_requirements_doc.md` contains detailed specifications for the planned implementation
 - Don't ever add the SERVICE_ROLE_KEY for supabase to the front end. that is too unsecure.
+- Try to compile every time after finishing your changes to make sure things work
