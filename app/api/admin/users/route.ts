@@ -61,8 +61,8 @@ export async function GET(req: NextRequest) {
     const accountType = searchParams.get('account_type') || ''
     const offset = (page - 1) * limit
 
-    // Build the query
-    let query = supabase
+    // Build the query with a join to get user emails
+    let baseQuery = supabase
       .from('user_profiles')
       .select(`
         id,
@@ -76,27 +76,29 @@ export async function GET(req: NextRequest) {
         created_at,
         updated_at
       `)
-      .order('created_at', { ascending: false })
-
-    // Apply search filter (search by name only since email is in auth.users)
-    if (search) {
-      query = query.ilike('full_name', `%${search}%`)
-    }
 
     // Apply account type filter
     if (accountType) {
-      query = query.eq('account_type', accountType)
+      baseQuery = baseQuery.eq('account_type', accountType)
     }
 
+    // We'll handle search after getting the user data since we need to search both name and email
+
     // Get total count for pagination
-    const { count } = await supabase
+    let countQuery = supabase
       .from('user_profiles')
       .select('*', { count: 'exact', head: true })
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1)
+    if (accountType) {
+      countQuery = countQuery.eq('account_type', accountType)
+    }
+    // We'll apply search filtering after getting the combined data
 
-    const { data: userProfiles, error: usersError } = await query
+    const { count } = await countQuery
+
+    // First, get all user profiles that match account type filter
+    const allProfilesQuery = baseQuery.order('created_at', { ascending: false })
+    const { data: allUserProfiles, error: usersError } = await allProfilesQuery
 
     if (usersError) {
       console.error('Error fetching users:', usersError)
@@ -106,13 +108,52 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // For now, we'll use placeholder emails since we can't easily access auth.users
-    // In a real implementation, you'd use the service role key to access auth.users
-    const users = userProfiles?.map(profile => ({
-      ...profile,
-      email: `user-${profile.id.substring(0, 8)}@example.com`, // Placeholder
-      status: 'active' // Placeholder
-    })) || []
+    // Fetch user emails from auth.users table
+    const allUserIds = allUserProfiles?.map(profile => profile.id) || []
+    let authUsers: any[] = []
+    
+    if (allUserIds.length > 0) {
+      const { data: authData, error: authError } = await supabase
+        .from('auth.users')
+        .select('id, email')
+        .in('id', allUserIds)
+
+      if (authError) {
+        console.error('Error fetching auth users:', authError)
+        // Fall back to placeholder emails if auth query fails
+        authUsers = allUserIds.map(id => ({
+          id,
+          email: `user-${id.substring(0, 8)}@example.com`
+        }))
+      } else {
+        authUsers = authData || []
+      }
+    }
+
+    // Combine profile data with email data
+    let allUsers = allUserProfiles?.map(profile => {
+      const authUser = authUsers.find(au => au.id === profile.id)
+      return {
+        ...profile,
+        email: authUser?.email || `user-${profile.id.substring(0, 8)}@example.com`,
+        status: 'active' // We'll keep this as active for now
+      }
+    }) || []
+
+    // Apply search filter on the combined data (search by name or email)
+    if (search) {
+      const searchLower = search.toLowerCase()
+      allUsers = allUsers.filter(user => 
+        (user.full_name && user.full_name.toLowerCase().includes(searchLower)) ||
+        (user.email && user.email.toLowerCase().includes(searchLower))
+      )
+    }
+
+    // Update count to reflect search filtering
+    const totalFilteredCount = allUsers.length
+
+    // Apply pagination to the filtered results
+    const users = allUsers.slice(offset, offset + limit)
 
     // Get additional stats
     const statsPromises = [
@@ -162,8 +203,8 @@ export async function GET(req: NextRequest) {
       pagination: {
         page,
         limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
+        total: totalFilteredCount,
+        totalPages: Math.ceil(totalFilteredCount / limit)
       }
     })
 
