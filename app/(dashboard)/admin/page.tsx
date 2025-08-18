@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function AdminPage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { } = useAuth()
   const { data: profile, isLoading: profileLoading } = useUserProfile()
   const [isAuthorized, setIsAuthorized] = useState(false)
 

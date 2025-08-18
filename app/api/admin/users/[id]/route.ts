@@ -3,10 +3,11 @@ import { supabase } from '@/utils/supabase'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id
+    const resolvedParams = await params
+    const userId = resolvedParams.id
     
     // Get the authorization header
     const authHeader = req.headers.get('authorization')
@@ -77,7 +78,7 @@ export async function PATCH(
     }
 
     // Build update object with only provided fields
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString()
     }
 
@@ -130,10 +131,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id
+    const resolvedParams = await params
+    const userId = resolvedParams.id
     
     // Get the authorization header
     const authHeader = req.headers.get('authorization')

@@ -55,7 +55,7 @@ export function UserManagementTable() {
     ...filters,
     search: debouncedSearch
   })
-  const { updateUser, deleteUser } = useAdminUserMutations()
+  const { deleteUser } = useAdminUserMutations()
 
   // Debounce search
   useEffect(() => {
@@ -287,7 +287,7 @@ export function UserManagementTable() {
           user={editingUser}
           open={!!editingUser}
           onClose={() => setEditingUser(null)}
-          onSave={(updatedUser) => {
+          onSave={() => {
             setEditingUser(null)
           }}
         />

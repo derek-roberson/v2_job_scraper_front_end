@@ -70,7 +70,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
     }
 
     try {
-      const updates: any = {}
+      const updates: Record<string, unknown> = {}
       
       if (formData.full_name !== (user.full_name || '')) {
         updates.full_name = formData.full_name
