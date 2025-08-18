@@ -93,6 +93,26 @@ export async function POST(req: NextRequest) {
       console.log('Subscription:', sub.id, 'status:', sub.status, 'created:', new Date(sub.created * 1000).toISOString())
     })
 
+    // If no subscriptions found with the customer, also try to find the specific known subscription
+    if (subscriptions.data.length === 0) {
+      console.log('No subscriptions found for customer, checking for known subscription ID: si_StBJs3G0p3uWUZ')
+      
+      try {
+        const knownSubscription = await stripe.subscriptions.retrieve('si_StBJs3G0p3uWUZ')
+        console.log('Found known subscription:', knownSubscription.id, 'customer:', knownSubscription.customer)
+        
+        // Check if this subscription belongs to this user's customer
+        if (knownSubscription.customer === customer.id) {
+          subscriptions.data = [knownSubscription]
+          console.log('Known subscription matches customer, using it for sync')
+        } else {
+          console.log('Known subscription belongs to different customer:', knownSubscription.customer)
+        }
+      } catch (knownSubError) {
+        console.log('Known subscription not found or inaccessible:', knownSubError)
+      }
+    }
+
     if (subscriptions.data.length === 0) {
       return NextResponse.json({ 
         error: 'No subscriptions found for your account',
@@ -100,7 +120,8 @@ export async function POST(req: NextRequest) {
           customer_id: customer.id,
           customer_email: customer.email,
           customer_created: new Date(customer.created * 1000).toISOString(),
-          subscriptions_count: subscriptions.data.length
+          subscriptions_count: subscriptions.data.length,
+          checked_known_subscription: 'si_StBJs3G0p3uWUZ'
         }
       }, { status: 404 })
     }
