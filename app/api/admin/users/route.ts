@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
+      console.error('Auth error:', authError)
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
@@ -32,6 +33,8 @@ export async function GET(req: NextRequest) {
       .single()
 
     if (profileError || adminProfile?.account_type !== 'admin') {
+      console.error('Profile error:', profileError)
+      console.error('User account type:', adminProfile?.account_type)
       return NextResponse.json(
         { error: 'Unauthorized: Admin access required' },
         { status: 403 }

@@ -150,14 +150,14 @@ export function UserManagementTable() {
           />
         </div>
         <Select 
-          value={filters.account_type} 
-          onValueChange={(value) => setFilters({ ...filters, account_type: value })}
+          value={filters.account_type || 'all'} 
+          onValueChange={(value) => setFilters({ ...filters, account_type: value === 'all' ? '' : value })}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Account Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="standard">Standard</SelectItem>
             <SelectItem value="privileged">Privileged</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>

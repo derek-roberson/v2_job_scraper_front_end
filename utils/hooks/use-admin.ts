@@ -48,7 +48,8 @@ export function useAdminUsers(filters: UserFilters = {}) {
     queryFn: async (): Promise<AdminUsersResponse> => {
       if (!user) throw new Error('Not authenticated')
 
-      const { data: { session } } = await import('@/utils/supabase').then(m => m.supabase.auth.getSession())
+      const { supabase } = await import('@/utils/supabase')
+      const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No access token')
 
       const searchParams = new URLSearchParams()
@@ -89,7 +90,8 @@ export function useAdminUserMutations() {
     }) => {
       if (!user) throw new Error('Not authenticated')
 
-      const { data: { session } } = await import('@/utils/supabase').then(m => m.supabase.auth.getSession())
+      const { supabase } = await import('@/utils/supabase')
+      const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No access token')
 
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -117,7 +119,8 @@ export function useAdminUserMutations() {
     mutationFn: async (userId: string) => {
       if (!user) throw new Error('Not authenticated')
 
-      const { data: { session } } = await import('@/utils/supabase').then(m => m.supabase.auth.getSession())
+      const { supabase } = await import('@/utils/supabase')
+      const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No access token')
 
       const response = await fetch(`/api/admin/users/${userId}`, {
