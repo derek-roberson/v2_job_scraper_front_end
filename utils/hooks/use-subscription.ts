@@ -44,7 +44,7 @@ export function useSubscription() {
 
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('stripe_price_id, status, current_period_end, cancel_at')
+        .select('subscription_tier')
         .eq('id', user.id)
         .single()
 
@@ -52,39 +52,25 @@ export function useSubscription() {
         return getFreePlanStatus()
       }
 
-      // Determine the plan and status
-      const isTrialing = data.status === 'trialing'
-      const isActive = data.status === 'active' || isTrialing
-      const isPro = data.stripe_price_id && data.stripe_price_id.includes('pro')
-      
-      let planId = 'free'
-      if (isPro && isActive) {
-        planId = 'pro'
-      }
+      // Determine the plan based on subscription_tier stored in user_profiles
+      const isPro = data.subscription_tier === 'pro'
+      const planId = isPro ? 'pro' : 'free'
 
       const plan = subscriptionPlans.find(p => p.id === planId) || subscriptionPlans[0]
-      
-      // Calculate trial end date if in trial
-      let trialEndsAt: string | undefined
-      if (isTrialing && data.current_period_end) {
-        trialEndsAt = data.current_period_end
-      }
       
       // Determine capabilities based on plan
       const canCreateQueries = planId === 'pro'
       const canResumeQueries = planId === 'pro'
       const canFetchNewJobs = planId === 'pro'
+      const isActive = planId === 'pro'
       
       return {
         isActive,
-        isTrial: isTrialing,
+        isTrial: false, // Simplified: no trial tracking in user_profiles
         isPrivileged: false,
         planId: plan.id,
         planName: plan.name,
-        status: data.status || 'free',
-        currentPeriodEnd: data.current_period_end,
-        cancelAt: data.cancel_at,
-        trialEndsAt,
+        status: planId, // Use planId as status
         canCreateQueries,
         canResumeQueries,
         canFetchNewJobs,

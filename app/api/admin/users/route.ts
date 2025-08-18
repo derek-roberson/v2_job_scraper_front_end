@@ -121,11 +121,17 @@ export async function GET(req: NextRequest) {
         .from('user_profiles')
         .select('*', { count: 'exact', head: true }),
       
-      // Pro subscribers (premium subscription tier)
+      // Free users
       supabase
         .from('user_profiles')
         .select('*', { count: 'exact', head: true })
-        .eq('subscription_tier', 'premium'),
+        .eq('subscription_tier', 'free'),
+      
+      // Pro subscribers (pro tier)
+      supabase
+        .from('user_profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('subscription_tier', 'pro'),
       
       // Privileged users
       supabase
@@ -140,10 +146,11 @@ export async function GET(req: NextRequest) {
         .eq('is_active', true)
     ]
 
-    const [totalUsers, proUsers, privilegedUsers, activeQueries] = await Promise.all(statsPromises)
+    const [totalUsers, freeUsers, proUsers, privilegedUsers, activeQueries] = await Promise.all(statsPromises)
 
     const stats = {
       totalUsers: totalUsers.count || 0,
+      freeUsers: freeUsers.count || 0,
       proUsers: proUsers.count || 0,
       privilegedUsers: privilegedUsers.count || 0,
       activeQueries: activeQueries.count || 0

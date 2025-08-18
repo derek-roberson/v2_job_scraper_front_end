@@ -82,7 +82,7 @@ export async function PATCH(
     }
 
     // Validate subscription_tier if provided
-    if (subscription_tier && !['free', 'basic', 'premium'].includes(subscription_tier)) {
+    if (subscription_tier && !['free', 'pro'].includes(subscription_tier)) {
       return NextResponse.json(
         { error: 'Invalid subscription tier' },
         { status: 400 }

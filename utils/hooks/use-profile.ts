@@ -7,7 +7,7 @@ export interface UserProfile {
   account_type: 'admin' | 'privileged' | 'user'
   full_name?: string
   company?: string
-  subscription_tier: 'free' | 'basic' | 'premium'
+  subscription_tier: 'free' | 'pro'
   max_active_queries: number
   is_suspended: boolean
   last_login_at?: string

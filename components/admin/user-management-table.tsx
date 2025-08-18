@@ -74,6 +74,7 @@ export function UserManagementTable() {
       }
       
       updateElement('total-users', data.stats.totalUsers)
+      updateElement('free-users', data.stats.freeUsers)
       updateElement('pro-users', data.stats.proUsers)
       updateElement('privileged-users', data.stats.privilegedUsers)
       updateElement('active-queries', data.stats.activeQueries)
@@ -115,14 +116,12 @@ export function UserManagementTable() {
   }
 
   const getSubscriptionBadge = (tier: string, status?: string) => {
-    if (status === 'active') {
+    if (status === 'active' && tier === 'pro') {
       return <Badge className="bg-green-500">Pro Active</Badge>
     }
     switch (tier) {
-      case 'premium':
-        return <Badge className="bg-purple-500">Premium</Badge>
-      case 'basic':
-        return <Badge className="bg-blue-500">Basic</Badge>
+      case 'pro':
+        return <Badge className="bg-blue-500">Pro ($10/month)</Badge>
       default:
         return <Badge variant="outline">Free</Badge>
     }

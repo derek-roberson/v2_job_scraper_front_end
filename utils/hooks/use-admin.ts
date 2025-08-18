@@ -8,7 +8,7 @@ export interface AdminUser {
   full_name?: string
   company?: string
   account_type: 'user' | 'privileged' | 'admin'
-  subscription_tier: 'free' | 'basic' | 'premium'
+  subscription_tier: 'free' | 'pro'
   max_active_queries: number
   is_suspended: boolean
   last_login_at?: string
@@ -19,6 +19,7 @@ export interface AdminUser {
 
 export interface AdminStats {
   totalUsers: number
+  freeUsers: number
   proUsers: number
   privilegedUsers: number
   activeQueries: number

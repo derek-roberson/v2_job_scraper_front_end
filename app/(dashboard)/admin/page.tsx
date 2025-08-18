@@ -50,7 +50,7 @@ export default function AdminPage() {
       </div>
 
       {/* Admin Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -66,12 +66,24 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
+              Free Users
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold" id="free-users">-</div>
+            <p className="text-xs text-gray-600">Free tier accounts</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
               Pro Subscribers
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" id="pro-users">-</div>
-            <p className="text-xs text-gray-600">Active subscriptions</p>
+            <p className="text-xs text-gray-600">Paid subscriptions</p>
           </CardContent>
         </Card>
 

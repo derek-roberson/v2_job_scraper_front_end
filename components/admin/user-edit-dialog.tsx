@@ -182,7 +182,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
             <Label>Subscription Tier</Label>
             <Select
               value={formData.subscription_tier}
-              onValueChange={(value: 'free' | 'basic' | 'premium') => 
+              onValueChange={(value: 'free' | 'pro') => 
                 setFormData({ ...formData, subscription_tier: value })
               }
             >
@@ -191,8 +191,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="basic">Basic</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
+                <SelectItem value="pro">Pro ($10/month)</SelectItem>
               </SelectContent>
             </Select>
           </div>
