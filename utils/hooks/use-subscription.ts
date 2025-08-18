@@ -43,7 +43,7 @@ export function useSubscription() {
       }
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('stripe_price_id, status, current_period_end, cancel_at')
         .eq('id', user.id)
         .single()

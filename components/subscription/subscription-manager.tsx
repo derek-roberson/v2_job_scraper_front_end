@@ -31,7 +31,7 @@ export function SubscriptionManager() {
   const fetchSubscription = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('stripe_customer_id, stripe_subscription_id, stripe_price_id, status, current_period_end, cancel_at')
         .eq('id', user?.id)
         .single()

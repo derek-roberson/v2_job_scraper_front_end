@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     // Check if the user is an admin
     const { data: adminProfile, error: profileError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('account_type, email')
       .eq('id', user.id)
       .single()

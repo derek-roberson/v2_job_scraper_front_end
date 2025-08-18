@@ -32,7 +32,7 @@ export async function PATCH(
 
     // Check if the user is an admin
     const { data: adminProfile, error: profileError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('account_type')
       .eq('id', user.id)
       .single()
@@ -89,7 +89,7 @@ export async function PATCH(
 
     // Update the user
     const { data: updatedUser, error: updateError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .update(updateData)
       .eq('id', userId)
       .select(`
@@ -160,7 +160,7 @@ export async function DELETE(
 
     // Check if the user is an admin
     const { data: adminProfile, error: profileError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('account_type')
       .eq('id', user.id)
       .single()
@@ -182,7 +182,7 @@ export async function DELETE(
 
     // Check if the target user exists and get their info
     const { data: targetUser, error: targetError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('account_type, email')
       .eq('id', userId)
       .single()
@@ -216,7 +216,7 @@ export async function DELETE(
 
     // Delete the user profile
     const { error: deleteError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .delete()
       .eq('id', userId)
 

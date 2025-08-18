@@ -35,7 +35,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
   // Update the user's profile with subscription data
   const { error } = await supabase
-    .from('profiles')
+    .from('user_profiles')
     .update(subscriptionData)
     .eq('id', userId)
 
@@ -56,7 +56,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const sub = subscription as StripeSubscriptionWithPeriod
   // Clear subscription data from the user's profile
   const { error } = await supabase
-    .from('profiles')
+    .from('user_profiles')
     .update({
       stripe_subscription_id: null,
       stripe_price_id: null,
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
           if (userId) {
             // Downgrade user to free plan
             await supabase
-              .from('profiles')
+              .from('user_profiles')
               .update({
                 status: 'free',
                 stripe_price_id: null,

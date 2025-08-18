@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     // Check if the user is an admin
     const { data: adminProfile, error: profileError } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('account_type')
       .eq('id', user.id)
       .single()
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
 
     // Build the query
     let query = supabase
-      .from('profiles')
+      .from('user_profiles')
       .select(`
         id,
         email,
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
 
     // Get total count for pagination
     const { count } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('*', { count: 'exact', head: true })
 
     // Apply pagination
@@ -99,18 +99,18 @@ export async function GET(req: NextRequest) {
     const statsPromises = [
       // Total users
       supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*', { count: 'exact', head: true }),
       
       // Pro subscribers (with active subscription)
       supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active'),
       
       // Privileged users
       supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*', { count: 'exact', head: true })
         .in('account_type', ['admin', 'privileged']),
       
