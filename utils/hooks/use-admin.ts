@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/utils/hooks/use-auth'
+import { supabase } from '@/utils/supabase'
 
 export interface AdminUser {
   id: string
@@ -48,8 +49,9 @@ export function useAdminUsers(filters: UserFilters = {}) {
     queryFn: async (): Promise<AdminUsersResponse> => {
       if (!user) throw new Error('Not authenticated')
 
-      const { supabase } = await import('@/utils/supabase')
       const { data: { session } } = await supabase.auth.getSession()
+      console.log('Admin API session:', session ? 'Session found' : 'No session')
+      console.log('Access token present:', !!session?.access_token)
       if (!session?.access_token) throw new Error('No access token')
 
       const searchParams = new URLSearchParams()
@@ -58,15 +60,23 @@ export function useAdminUsers(filters: UserFilters = {}) {
       if (filters.search) searchParams.set('search', filters.search)
       if (filters.account_type) searchParams.set('account_type', filters.account_type)
 
-      const response = await fetch(`/api/admin/users?${searchParams}`, {
+      const url = `/api/admin/users?${searchParams}`
+      console.log('Fetching admin users from:', url)
+      console.log('Authorization header:', `Bearer ${session.access_token.substring(0, 20)}...`)
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
       })
 
+      console.log('Admin API response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch users')
+        const errorText = await response.text()
+        console.error('Admin API error response:', errorText)
+        throw new Error(`Failed to fetch users: ${response.status} ${errorText}`)
       }
 
       return response.json()
@@ -90,7 +100,6 @@ export function useAdminUserMutations() {
     }) => {
       if (!user) throw new Error('Not authenticated')
 
-      const { supabase } = await import('@/utils/supabase')
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No access token')
 
@@ -119,7 +128,6 @@ export function useAdminUserMutations() {
     mutationFn: async (userId: string) => {
       if (!user) throw new Error('Not authenticated')
 
-      const { supabase } = await import('@/utils/supabase')
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No access token')
 
