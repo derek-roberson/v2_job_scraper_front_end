@@ -38,20 +38,26 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if the user is an admin
+    console.log('Checking admin access for user:', user.id)
     const { data: adminProfile, error: profileError } = await supabase
       .from('user_profiles')
       .select('account_type')
       .eq('id', user.id)
       .single()
 
+    console.log('Profile lookup result:', { adminProfile, profileError })
+    
     if (profileError || adminProfile?.account_type !== 'admin') {
       console.error('Profile error:', profileError)
       console.error('User account type:', adminProfile?.account_type)
+      console.error('Access denied for user:', user.id)
       return NextResponse.json(
         { error: 'Unauthorized: Admin access required' },
         { status: 403 }
       )
     }
+    
+    console.log('Admin access granted for user:', user.id)
 
     // Get query parameters
     const { searchParams } = new URL(req.url)
