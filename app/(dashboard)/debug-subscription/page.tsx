@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -10,7 +11,7 @@ import { Button } from '@/components/ui/button'
 export default function DebugSubscriptionPage() {
   const { user } = useAuth()
   const { data: subscription } = useSubscription()
-  const [profileData, setProfileData] = useState<any>(null)
+  const [profileData, setProfileData] = useState<{data: Record<string, unknown> | null, error: Error | null} | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function DebugSubscriptionPage() {
 
         setProfileData({ data, error })
       } catch (err) {
-        setProfileData({ data: null, error: err })
+        setProfileData({ data: null, error: err instanceof Error ? err : new Error('Unknown error') })
       } finally {
         setLoading(false)
       }
@@ -54,7 +55,7 @@ export default function DebugSubscriptionPage() {
 
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_profiles')
         .insert({
           id: user.id,
@@ -137,10 +138,10 @@ export default function DebugSubscriptionPage() {
           <ul className="space-y-2">
             <li>✅ Auth User Exists: {user ? 'Yes' : 'No'}</li>
             <li>{profileData?.data ? '✅' : '❌'} User Profile Exists: {profileData?.data ? 'Yes' : 'No'}</li>
-            <li>{profileData?.data?.stripe_customer_id ? '✅' : '❌'} Stripe Customer ID: {profileData?.data?.stripe_customer_id || 'Missing'}</li>
-            <li>{profileData?.data?.stripe_subscription_id ? '✅' : '❌'} Stripe Subscription ID: {profileData?.data?.stripe_subscription_id || 'Missing'}</li>
-            <li>📊 Subscription Status: {profileData?.data?.status || 'None'}</li>
-            <li>🎯 Subscription Tier: {profileData?.data?.subscription_tier || 'None'}</li>
+            <li>{(profileData?.data as any)?.stripe_customer_id ? '✅' : '❌'} Stripe Customer ID: {(profileData?.data as any)?.stripe_customer_id || 'Missing'}</li>
+            <li>{(profileData?.data as any)?.stripe_subscription_id ? '✅' : '❌'} Stripe Subscription ID: {(profileData?.data as any)?.stripe_subscription_id || 'Missing'}</li>
+            <li>📊 Subscription Status: {(profileData?.data as any)?.status || 'None'}</li>
+            <li>🎯 Subscription Tier: {(profileData?.data as any)?.subscription_tier || 'None'}</li>
           </ul>
         </CardContent>
       </Card>
