@@ -83,12 +83,13 @@ export default function ResetPasswordPage() {
         }
         setCheckingToken(false)
       } else {
-        // Check if user has an active recovery session
+        // Check if user has an active session (from Supabase auto-login)
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user?.aud === 'authenticated' && session.user.email) {
-          // User is logged in, probably from clicking the reset link
+          // User is logged in from clicking the reset link - this is valid for password reset
           setIsValidToken(true)
+          console.log('User authenticated via reset link, allowing password reset')
         } else {
           setError('Invalid or expired reset link. Please request a new password reset.')
           setIsValidToken(false)
@@ -127,14 +128,6 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      // Check if we have a stored recovery session
-      const storedSession = window.sessionStorage.getItem('recovery_session')
-      if (storedSession) {
-        const session = JSON.parse(storedSession)
-        // Set the session temporarily to update the password
-        await supabase.auth.setSession(session)
-      }
-
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       })
@@ -143,8 +136,6 @@ export default function ResetPasswordPage() {
         setError(updateError.message)
       } else {
         setSuccess(true)
-        // Clean up stored session
-        window.sessionStorage.removeItem('recovery_session')
         // Sign out the user to force them to login with new password
         await supabase.auth.signOut()
         // Redirect to login after 2 seconds
