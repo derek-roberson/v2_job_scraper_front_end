@@ -77,3 +77,4 @@ The application will include:
 - Path aliases configured for clean imports (`@/components`, `@/lib`, etc.)
 - Currently has default Next.js starter content that will be replaced
 - The `frontend_requirements_doc.md` contains detailed specifications for the planned implementation
+- Don't ever add the SERVICE_ROLE_KEY for supabase to the front end. that is too unsecure.
