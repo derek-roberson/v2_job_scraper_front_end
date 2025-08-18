@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+interface UserProfile {
+  id: string
+  full_name: string | null
+  company: string | null
+  account_type: string
+  subscription_tier: string
+  max_active_queries: number
+  is_suspended: boolean
+  last_login_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export async function GET(req: NextRequest) {
   try {
     // Get the authorization header
@@ -67,7 +80,7 @@ export async function GET(req: NextRequest) {
 
     // Use the admin function to get all user profiles (bypasses RLS securely)
     const { data: allProfiles, error: profilesError } = await supabase
-      .rpc('get_all_user_profiles_for_admin')
+      .rpc('get_all_user_profiles_for_admin') as { data: UserProfile[] | null, error: Error | null }
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError)
@@ -83,9 +96,9 @@ export async function GET(req: NextRequest) {
     // Debug logging
     console.log('Found total profiles:', allProfiles?.length || 0)
     console.log('Paginated profiles count:', profiles?.length || 0)
-    console.log('Profile subscription tiers:', profiles?.map(p => p.subscription_tier))
-    console.log('Profile account types:', profiles?.map(p => p.account_type))
-    console.log('Profile IDs:', profiles?.map(p => p.id.toString().substring(0, 8)))
+    console.log('Profile subscription tiers:', profiles?.map((p: UserProfile) => p.subscription_tier))
+    console.log('Profile account types:', profiles?.map((p: UserProfile) => p.account_type))
+    console.log('Profile IDs:', profiles?.map((p: UserProfile) => p.id.substring(0, 8)))
     console.log('Sample profile:', profiles?.[0])
     
     const totalCount = allProfiles?.length || 0
@@ -109,9 +122,9 @@ export async function GET(req: NextRequest) {
     // Basic stats - calculate from all profiles, not just the paginated ones
     const stats = {
       totalUsers: totalCount,
-      freeUsers: allProfiles?.filter(u => u.subscription_tier === 'free').length || 0,
-      proUsers: allProfiles?.filter(u => u.subscription_tier === 'pro').length || 0,
-      privilegedUsers: allProfiles?.filter(u => ['admin', 'privileged'].includes(u.account_type)).length || 0,
+      freeUsers: allProfiles?.filter((u: UserProfile) => u.subscription_tier === 'free').length || 0,
+      proUsers: allProfiles?.filter((u: UserProfile) => u.subscription_tier === 'pro').length || 0,
+      privilegedUsers: allProfiles?.filter((u: UserProfile) => ['admin', 'privileged'].includes(u.account_type)).length || 0,
       activeQueries: 0
     }
 
