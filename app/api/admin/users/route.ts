@@ -84,17 +84,7 @@ export async function GET(req: NextRequest) {
 
     // We'll handle search after getting the user data since we need to search both name and email
 
-    // Get total count for pagination
-    let countQuery = supabase
-      .from('user_profiles')
-      .select('*', { count: 'exact', head: true })
-
-    if (accountType) {
-      countQuery = countQuery.eq('account_type', accountType)
-    }
-    // We'll apply search filtering after getting the combined data
-
-    const { count } = await countQuery
+    // We'll count after filtering since we need to include email search
 
     // First, get all user profiles that match account type filter
     const allProfilesQuery = baseQuery.order('created_at', { ascending: false })
@@ -110,7 +100,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch user emails from auth.users table
     const allUserIds = allUserProfiles?.map(profile => profile.id) || []
-    let authUsers: any[] = []
+    let authUsers: { id: string; email: string }[] = []
     
     if (allUserIds.length > 0) {
       const { data: authData, error: authError } = await supabase
@@ -126,7 +116,7 @@ export async function GET(req: NextRequest) {
           email: `user-${id.substring(0, 8)}@example.com`
         }))
       } else {
-        authUsers = authData || []
+        authUsers = (authData || []) as { id: string; email: string }[]
       }
     }
 
