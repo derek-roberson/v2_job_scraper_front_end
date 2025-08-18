@@ -11,6 +11,67 @@ type StripeSubscriptionWithPeriod = Stripe.Subscription & {
   canceled_at?: number | null
 }
 
+// Helper function to sync subscription data
+async function syncSubscriptionData(user: any, customer: any, subscriptions: Stripe.Subscription[], supabase: any) {
+  if (subscriptions.length === 0) {
+    return NextResponse.json({ 
+      error: 'No subscriptions found',
+      debug_info: {
+        customer_id: customer.id,
+        customer_email: customer.email,
+        subscriptions_count: subscriptions.length
+      }
+    }, { status: 404 })
+  }
+
+  // Get the most recent active or trialing subscription
+  const activeSubscription = subscriptions.find(sub => 
+    sub.status === 'active' || sub.status === 'trialing'
+  ) || subscriptions[0]
+
+  // Cast to our extended type that includes period fields
+  const sub = activeSubscription as StripeSubscriptionWithPeriod
+
+  // Prepare subscription data
+  const subscriptionData = {
+    stripe_customer_id: customer.id,
+    stripe_subscription_id: activeSubscription.id,
+    stripe_price_id: activeSubscription.items.data[0]?.price.id,
+    status: activeSubscription.status,
+    current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+    current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+    cancel_at: sub.cancel_at ? new Date(sub.cancel_at * 1000).toISOString() : null,
+    canceled_at: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : null,
+    subscription_tier: activeSubscription.status === 'active' || activeSubscription.status === 'trialing' ? 'pro' : 'free',
+    updated_at: new Date().toISOString()
+  }
+
+  // Update user profile with Stripe data
+  const { error: updateError } = await supabase
+    .from('user_profiles')
+    .update(subscriptionData)
+    .eq('id', user.id)
+
+  if (updateError) {
+    console.error('Error updating user profile:', updateError)
+    return NextResponse.json({ 
+      error: 'Failed to update user profile',
+      details: updateError 
+    }, { status: 500 })
+  }
+
+  return NextResponse.json({
+    message: 'Subscription synced successfully!',
+    customer_id: customer.id,
+    subscription_id: activeSubscription.id,
+    subscription_status: activeSubscription.status,
+    price_id: activeSubscription.items.data[0]?.price.id,
+    current_period_end: subscriptionData.current_period_end,
+    is_trial: activeSubscription.status === 'trialing',
+    synced_data: subscriptionData
+  })
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Check if Stripe is configured
@@ -49,6 +110,30 @@ export async function POST(req: NextRequest) {
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
+    }
+
+    // Strategy 1: Look for subscriptions by userId metadata first
+    console.log('Looking for subscriptions by userId metadata:', user.id)
+    const allSubscriptions = await stripe.subscriptions.list({
+      limit: 50,
+      status: 'all'
+    })
+
+    const userSubscriptions = allSubscriptions.data.filter(sub => 
+      sub.metadata.userId === user.id
+    )
+
+    console.log('Found subscriptions with matching userId:', userSubscriptions.length)
+    
+    if (userSubscriptions.length > 0) {
+      const subscription = userSubscriptions[0]
+      const customerId = subscription.customer as string
+      console.log('Found subscription, using customer:', customerId)
+      
+      // Get customer details
+      const customer = await stripe.customers.retrieve(customerId)
+      
+      return await syncSubscriptionData(user, customer, userSubscriptions, supabase)
     }
 
     // Find Stripe customer by email
