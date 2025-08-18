@@ -89,7 +89,7 @@ export function NotificationOnboarding({ open, onComplete }: NotificationOnboard
         </div>
         <h3 className="text-xl font-semibold mb-2">Welcome to Job Alerts!</h3>
         <p className="text-gray-600">
-          Let's set up your notification preferences to help you never miss the perfect opportunity.
+          Let&apos;s set up your notification preferences to help you never miss the perfect opportunity.
         </p>
       </div>
 
@@ -240,7 +240,7 @@ export function NotificationOnboarding({ open, onComplete }: NotificationOnboard
           </h4>
           <p className="text-sm text-green-800">
             Setting notification hours helps maintain work-life balance and ensures you receive 
-            job alerts when you're most likely to act on them. Jobs found outside your preferred 
+            job alerts when you&apos;re most likely to act on them. Jobs found outside your preferred 
             hours will be saved and sent during your next notification window.
           </p>
         </div>
