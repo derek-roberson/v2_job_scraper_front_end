@@ -37,14 +37,14 @@ async function syncSubscriptionData(
   // Cast to our extended type that includes period fields
   const sub = activeSubscription as StripeSubscriptionWithPeriod
 
-  // Prepare subscription data
+  // Prepare subscription data with safe date conversion
   const subscriptionData = {
     stripe_customer_id: customer.id,
     stripe_subscription_id: activeSubscription.id,
     stripe_price_id: activeSubscription.items.data[0]?.price.id,
     status: activeSubscription.status,
-    current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
-    current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+    current_period_start: sub.current_period_start ? new Date(sub.current_period_start * 1000).toISOString() : null,
+    current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
     cancel_at: sub.cancel_at ? new Date(sub.cancel_at * 1000).toISOString() : null,
     canceled_at: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : null,
     subscription_tier: activeSubscription.status === 'active' || activeSubscription.status === 'trialing' ? 'pro' : 'free',
