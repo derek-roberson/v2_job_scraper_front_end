@@ -22,17 +22,31 @@ export default function ResetPasswordPage() {
   const [checkingToken, setCheckingToken] = useState(true)
 
   useEffect(() => {
-    // Check if we have a valid recovery token
+    // Check for recovery token in URL hash
     const checkRecoveryToken = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
+      // Get the hash from the URL (Supabase sends tokens in the hash)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const type = hashParams.get('type')
       
-      if (error || !session) {
-        setError('Invalid or expired reset link. Please request a new password reset.')
-        setIsValidToken(false)
-      } else {
+      // Check if this is a recovery type token
+      if (type === 'recovery' && accessToken) {
+        // We have a valid recovery token
         setIsValidToken(true)
+        setCheckingToken(false)
+      } else {
+        // Check if user is already logged in with a recovery session
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (session?.user?.recovery_sent_at) {
+          // User has a recovery session
+          setIsValidToken(true)
+        } else {
+          setError('Invalid or expired reset link. Please request a new password reset.')
+          setIsValidToken(false)
+        }
+        setCheckingToken(false)
       }
-      setCheckingToken(false)
     }
 
     checkRecoveryToken()
@@ -73,9 +87,11 @@ export default function ResetPasswordPage() {
         setError(updateError.message)
       } else {
         setSuccess(true)
-        // Redirect to dashboard after 2 seconds
+        // Sign out the user to force them to login with new password
+        await supabase.auth.signOut()
+        // Redirect to login after 2 seconds
         setTimeout(() => {
-          router.push('/dashboard')
+          router.push('/login?message=Password reset successfully. Please sign in with your new password.')
         }, 2000)
       }
     } catch (err) {
@@ -197,7 +213,7 @@ export default function ResetPasswordPage() {
             {success && (
               <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded">
                 <Check className="h-4 w-4" />
-                Password reset successfully! Redirecting to dashboard...
+                Password reset successfully! Redirecting to login...
               </div>
             )}
 
