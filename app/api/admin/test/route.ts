@@ -28,14 +28,15 @@ export async function GET(req: NextRequest) {
 
     console.log('User authenticated:', user.id, user.email)
 
-    // Check if the user is an admin
+    // Check if the user is an admin - this should work since RLS allows users to view their own profile
     const { data: adminProfile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('account_type')
+      .select('account_type, full_name, subscription_tier, max_active_queries')
       .eq('id', user.id)
       .single()
 
     console.log('Profile lookup result:', { adminProfile, profileError })
+    console.log('User ID being queried:', user.id)
 
     return NextResponse.json({
       user: {
