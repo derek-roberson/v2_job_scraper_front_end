@@ -110,7 +110,7 @@ export function UserManagementTable() {
       case 'privileged':
         return <Badge className="bg-blue-500">Privileged</Badge>
       default:
-        return <Badge variant="secondary">Standard</Badge>
+        return <Badge variant="secondary">User</Badge>
     }
   }
 
@@ -158,7 +158,7 @@ export function UserManagementTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="standard">Standard</SelectItem>
+            <SelectItem value="user">User</SelectItem>
             <SelectItem value="privileged">Privileged</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
           </SelectContent>

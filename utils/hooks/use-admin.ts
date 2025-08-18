@@ -6,13 +6,14 @@ export interface AdminUser {
   id: string
   email: string
   full_name?: string
-  account_type: 'standard' | 'privileged' | 'admin'
+  company?: string
+  account_type: 'user' | 'privileged' | 'admin'
   subscription_tier: 'free' | 'basic' | 'premium'
   max_active_queries: number
+  is_suspended: boolean
+  last_login_at?: string
   created_at: string
   updated_at: string
-  stripe_customer_id?: string
-  stripe_subscription_id?: string
   status?: string
 }
 

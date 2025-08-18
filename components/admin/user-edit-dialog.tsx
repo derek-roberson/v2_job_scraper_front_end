@@ -156,7 +156,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
               {getAccountTypeIcon(formData.account_type)}
               <Select
                 value={formData.account_type}
-                onValueChange={(value: 'standard' | 'privileged' | 'admin') => 
+                onValueChange={(value: 'user' | 'privileged' | 'admin') => 
                   setFormData({ ...formData, account_type: value })
                 }
               >
@@ -164,7 +164,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standard">Standard User</SelectItem>
+                  <SelectItem value="user">Standard User</SelectItem>
                   <SelectItem value="privileged">Privileged User</SelectItem>
                   <SelectItem value="admin">Administrator</SelectItem>
                 </SelectContent>
@@ -173,7 +173,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
             <div className="text-xs text-gray-500">
               {formData.account_type === 'admin' && 'Full system access with admin privileges'}
               {formData.account_type === 'privileged' && 'Bypasses subscription limitations'}
-              {formData.account_type === 'standard' && 'Standard user with subscription limits'}
+              {formData.account_type === 'user' && 'Standard user with subscription limits'}
             </div>
           </div>
 

@@ -62,7 +62,7 @@ export async function PATCH(
     } = body
 
     // Validate account_type if provided
-    if (account_type && !['standard', 'privileged', 'admin'].includes(account_type)) {
+    if (account_type && !['user', 'privileged', 'admin'].includes(account_type)) {
       return NextResponse.json(
         { error: 'Invalid account type' },
         { status: 400 }
@@ -94,16 +94,15 @@ export async function PATCH(
       .eq('id', userId)
       .select(`
         id,
-        email,
         full_name,
+        company,
         account_type,
         subscription_tier,
         max_active_queries,
+        is_suspended,
+        last_login_at,
         created_at,
-        updated_at,
-        stripe_customer_id,
-        stripe_subscription_id,
-        status
+        updated_at
       `)
       .single()
 
