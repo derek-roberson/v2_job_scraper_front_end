@@ -23,7 +23,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
   const [webhookNotifications, setWebhookNotifications] = useState(preferences?.webhook_notifications ?? false)
   const [webhookUrl, setWebhookUrl] = useState(preferences?.webhook_url || '')
   const [frequency, setFrequency] = useState(preferences?.notification_frequency || 'hourly')
-  const [emailDigest, setEmailDigest] = useState(preferences?.email_digest ?? false)
   const [dataSharing, setDataSharing] = useState(preferences?.data_sharing_consent ?? false)
   const [respectNotificationHours, setRespectNotificationHours] = useState(preferences?.respect_notification_hours ?? false)
   const [notificationHours, setNotificationHours] = useState<number[]>(preferences?.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17])
@@ -37,7 +36,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
       setWebhookNotifications(preferences.webhook_notifications ?? false)
       setWebhookUrl(preferences.webhook_url || '')
       setFrequency(preferences.notification_frequency || 'hourly')
-      setEmailDigest(preferences.email_digest ?? false)
       setDataSharing(preferences.data_sharing_consent ?? false)
       setRespectNotificationHours(preferences.respect_notification_hours ?? false)
       setNotificationHours(preferences.notification_hours ?? [9, 10, 11, 12, 13, 14, 15, 16, 17])
@@ -87,7 +85,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
         webhook_notifications: webhookNotifications,
         webhook_url: webhookUrl.trim() || undefined,
         notification_frequency: frequency as 'hourly',
-        email_digest: emailDigest,
         data_sharing_consent: dataSharing,
         notification_hours: notificationHours,
         respect_notification_hours: respectNotificationHours,
@@ -103,7 +100,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
     emailNotifications !== (preferences?.email_notifications ?? true) ||
     webhookNotifications !== (preferences?.webhook_notifications ?? false) ||
     webhookUrl !== (preferences?.webhook_url || '') ||
-    emailDigest !== (preferences?.email_digest ?? false) ||
     dataSharing !== (preferences?.data_sharing_consent ?? false) ||
     respectNotificationHours !== (preferences?.respect_notification_hours ?? false) ||
     timezone !== (preferences?.timezone || '') ||
@@ -283,29 +279,6 @@ export function NotificationSettings({ preferences }: NotificationSettingsProps)
               </div>
             </div>
           )}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Email Digest */}
-      <div>
-        <h4 className="font-medium mb-4">Email Digest</h4>
-        <div className="space-y-4">
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="email-digest">Email Digest</Label>
-              <p className="text-sm text-gray-600">
-                Receive a weekly summary of your job search activity
-              </p>
-            </div>
-            <Switch
-              id="email-digest"
-              checked={emailDigest}
-              onCheckedChange={setEmailDigest}
-            />
-          </div>
         </div>
       </div>
 

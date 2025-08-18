@@ -186,12 +186,14 @@ export function SubscriptionManager() {
             {getStatusBadge()}
           </div>
 
-          {subscription?.status === 'active' && (
+          {(subscription?.status === 'active' || subscription?.status === 'trialing') && (
             <div className="grid md:grid-cols-2 gap-4 py-4 border-t">
               <div className="flex items-center gap-3">
                 <Calendar className="h-5 w-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-600">Current Period Ends</p>
+                  <p className="text-sm text-gray-600">
+                    {subscription.status === 'trialing' ? 'Trial Ends' : 'Current Period Ends'}
+                  </p>
                   <p className="font-medium">{formatDate(subscription.current_period_end)}</p>
                 </div>
               </div>
@@ -219,7 +221,7 @@ export function SubscriptionManager() {
                   <CreditCard className="h-4 w-4" />
                   {portalLoading ? 'Loading...' : 'Manage Billing'}
                 </Button>
-                {subscription.status !== 'active' && (
+                {subscription.status !== 'active' && subscription.status !== 'trialing' && (
                   <Button
                     variant="outline"
                     onClick={() => router.push('/pricing')}
