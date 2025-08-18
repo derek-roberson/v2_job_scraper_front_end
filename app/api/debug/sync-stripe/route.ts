@@ -1,0 +1,124 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { stripe, isStripeConfigured } from '@/utils/stripe'
+
+export async function POST(req: NextRequest) {
+  try {
+    // Check if Stripe is configured
+    if (!isStripeConfigured() || !stripe) {
+      return NextResponse.json(
+        { error: 'Stripe is not configured' },
+        { status: 503 }
+      )
+    }
+
+    // Get authorization header
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Missing or invalid authorization header' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.substring(7)
+    
+    // Create an authenticated Supabase client with the user's token
+    const supabaseUrl = process.env.SUPABASE_URL!
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    })
+
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
+    }
+
+    // Find Stripe customer by email
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1
+    })
+
+    if (customers.data.length === 0) {
+      return NextResponse.json({ 
+        error: 'No Stripe customer found with your email',
+        email: user.email 
+      }, { status: 404 })
+    }
+
+    const customer = customers.data[0]
+
+    // Get active subscriptions for this customer
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: 'all',
+      limit: 10
+    })
+
+    if (subscriptions.data.length === 0) {
+      return NextResponse.json({ 
+        error: 'No subscriptions found for your account' 
+      }, { status: 404 })
+    }
+
+    // Get the most recent active or trialing subscription
+    const activeSubscription = subscriptions.data.find(sub => 
+      sub.status === 'active' || sub.status === 'trialing'
+    ) || subscriptions.data[0]
+
+    // Prepare subscription data
+    const subscriptionData = {
+      stripe_customer_id: customer.id,
+      stripe_subscription_id: activeSubscription.id,
+      stripe_price_id: activeSubscription.items.data[0]?.price.id,
+      status: activeSubscription.status,
+      current_period_start: new Date(activeSubscription.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(activeSubscription.current_period_end * 1000).toISOString(),
+      cancel_at: activeSubscription.cancel_at ? new Date(activeSubscription.cancel_at * 1000).toISOString() : null,
+      canceled_at: activeSubscription.canceled_at ? new Date(activeSubscription.canceled_at * 1000).toISOString() : null,
+      subscription_tier: activeSubscription.status === 'active' || activeSubscription.status === 'trialing' ? 'pro' : 'free',
+      updated_at: new Date().toISOString()
+    }
+
+    // Update user profile with Stripe data
+    const { error: updateError } = await supabase
+      .from('user_profiles')
+      .update(subscriptionData)
+      .eq('id', user.id)
+
+    if (updateError) {
+      console.error('Error updating user profile:', updateError)
+      return NextResponse.json({ 
+        error: 'Failed to update user profile',
+        details: updateError 
+      }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      message: 'Subscription synced successfully!',
+      customer_id: customer.id,
+      subscription_id: activeSubscription.id,
+      subscription_status: activeSubscription.status,
+      price_id: activeSubscription.items.data[0]?.price.id,
+      current_period_end: subscriptionData.current_period_end,
+      is_trial: activeSubscription.status === 'trialing',
+      synced_data: subscriptionData
+    })
+
+  } catch (error) {
+    console.error('Stripe sync error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}

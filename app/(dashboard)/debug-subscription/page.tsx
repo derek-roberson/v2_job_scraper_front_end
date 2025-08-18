@@ -13,6 +13,7 @@ export default function DebugSubscriptionPage() {
   const { data: subscription } = useSubscription()
   const [profileData, setProfileData] = useState<{data: Record<string, unknown> | null, error: Error | null} | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -78,6 +79,43 @@ export default function DebugSubscriptionPage() {
     }
   }
 
+  const syncStripeData = async () => {
+    if (!user) return
+
+    try {
+      setSyncing(true)
+      
+      // Get the auth token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        alert('Not authenticated')
+        return
+      }
+
+      const response = await fetch('/api/debug/sync-stripe', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to sync')
+      }
+
+      alert('Subscription synced successfully! Refreshing page...')
+      window.location.reload()
+    } catch (error) {
+      console.error('Sync error:', error)
+      alert('Error syncing subscription: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   if (loading) return <div>Loading...</div>
 
   return (
@@ -113,6 +151,15 @@ export default function DebugSubscriptionPage() {
               <p className="text-red-600 mb-2">Profile not found! This is the issue.</p>
               <Button onClick={createProfile}>
                 Create Missing User Profile
+              </Button>
+            </div>
+          )}
+
+          {profileData?.data && !(profileData.data as any)?.stripe_subscription_id && (
+            <div className="mt-4">
+              <p className="text-yellow-600 mb-2">Stripe subscription data is missing! This is likely why your trial isn't working.</p>
+              <Button onClick={syncStripeData} disabled={syncing}>
+                {syncing ? 'Syncing...' : 'Sync Stripe Subscription Data'}
               </Button>
             </div>
           )}
