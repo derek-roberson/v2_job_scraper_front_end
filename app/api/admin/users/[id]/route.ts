@@ -107,53 +107,52 @@ export async function PATCH(
 
     console.log('Update attempt:', { userId, updateData })
 
-    // First check if the user exists
-    const { data: existingUser, error: existsError } = await supabase
-      .from('user_profiles')
-      .select('id, account_type')
-      .eq('id', userId)
-      .single()
+    // Check if the user exists using our admin function (bypasses RLS)
+    const { data: allProfiles, error: profilesError } = await supabase
+      .rpc('get_all_user_profiles_for_admin')
 
-    console.log('User exists check:', { existingUser, existsError })
+    console.log('Admin profiles fetch:', { profilesCount: allProfiles?.length, profilesError })
 
-    if (existsError || !existingUser) {
+    if (profilesError) {
+      return NextResponse.json(
+        { error: 'Failed to verify user existence' },
+        { status: 500 }
+      )
+    }
+
+    const existingUser = allProfiles?.find((p: any) => p.id === userId)
+    console.log('User exists check:', { exists: !!existingUser, userId })
+
+    if (!existingUser) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       )
     }
 
-    // Update the user
+    // Update the user using our secure admin function (bypasses RLS)
     const { data: updatedUser, error: updateError } = await supabase
-      .from('user_profiles')
-      .update(updateData)
-      .eq('id', userId)
-      .select(`
-        id,
-        full_name,
-        company,
-        account_type,
-        subscription_tier,
-        max_active_queries,
-        is_suspended,
-        last_login_at,
-        created_at,
-        updated_at
-      `)
-      .single()
+      .rpc('update_user_profile_for_admin', {
+        target_user_id: userId,
+        new_account_type: account_type,
+        new_full_name: full_name
+      })
 
     console.log('Update result:', { updatedUser, updateError })
 
     if (updateError) {
       console.error('Error updating user:', updateError)
       return NextResponse.json(
-        { error: 'Failed to update user' },
+        { error: updateError.message || 'Failed to update user' },
         { status: 500 }
       )
     }
 
+    // The function returns an array, get the first result
+    const user = Array.isArray(updatedUser) ? updatedUser[0] : updatedUser
+
     return NextResponse.json({
-      user: updatedUser,
+      user: user,
       message: 'User updated successfully'
     })
 
