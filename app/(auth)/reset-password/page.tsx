@@ -22,78 +22,85 @@ export default function ResetPasswordPage() {
   const [checkingToken, setCheckingToken] = useState(true)
 
   useEffect(() => {
-    // Check for recovery token in URL
+    // Check for recovery token validation with retry logic
     const checkRecoveryToken = async () => {
-      // Get token from URL params (if coming from custom email template)
-      const urlParams = new URLSearchParams(window.location.search)
-      const token = urlParams.get('token')
-      const type = urlParams.get('type')
+      // Small delay to allow Supabase auth state to settle after redirect
+      await new Promise(resolve => setTimeout(resolve, 100))
       
-      // Get token from URL hash (if coming from default Supabase redirect)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const hashToken = hashParams.get('access_token')
-      const hashType = hashParams.get('type')
-      
-      // Check if this is a recovery type token from either source
-      if ((type === 'recovery' && token) || (hashType === 'recovery' && hashToken)) {
-        // Sign out any existing session to prevent auto-login
-        await supabase.auth.signOut()
+      try {
+        // Check current session first
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
-        // For hash-based tokens (from default Supabase redirect)
+        if (sessionError) {
+          console.error('Session error:', sessionError)
+          setError('Authentication error. Please try again.')
+          setIsValidToken(false)
+          setCheckingToken(false)
+          return
+        }
+
+        if (session?.user?.aud === 'authenticated' && session.user.email) {
+          // User is authenticated - likely from clicking the password reset link
+          console.log('User authenticated via reset link, allowing password reset')
+          setIsValidToken(true)
+          setCheckingToken(false)
+          return
+        }
+
+        // Check for tokens in URL (both hash and query params)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const urlParams = new URLSearchParams(window.location.search)
+        
+        const hashToken = hashParams.get('access_token')
+        const hashType = hashParams.get('type')
+        const urlToken = urlParams.get('token')
+        const urlType = urlParams.get('type')
+        
+        // Handle hash-based tokens (from Supabase redirect)
         if (hashType === 'recovery' && hashToken) {
-          try {
-            // Set the session with the recovery token
-            const { error } = await supabase.auth.setSession({
-              access_token: hashToken,
-              refresh_token: hashParams.get('refresh_token') || ''
-            })
-            
-            if (!error) {
-              setIsValidToken(true)
-            } else {
-              setError('Invalid or expired reset link. Please request a new password reset.')
-              setIsValidToken(false)
-            }
-          } catch (err) {
-            setError('Invalid or expired reset link. Please request a new password reset.')
-            setIsValidToken(false)
-          }
-        } 
-        // For query param tokens (from custom email template)
-        else if (type === 'recovery' && token) {
-          try {
-            // Verify the token by calling Supabase's verify endpoint
-            const { data, error } = await supabase.auth.verifyOtp({
-              token_hash: token,
-              type: 'recovery'
-            })
-            
-            if (!error && data.user) {
-              setIsValidToken(true)
-              // Store the session temporarily for password update
-              window.sessionStorage.setItem('recovery_session', JSON.stringify(data.session))
-            } else {
-              setError('Invalid or expired reset link. Please request a new password reset.')
-              setIsValidToken(false)
-            }
-          } catch (err) {
+          console.log('Processing hash-based recovery token')
+          const refreshToken = hashParams.get('refresh_token') || ''
+          
+          const { error } = await supabase.auth.setSession({
+            access_token: hashToken,
+            refresh_token: refreshToken
+          })
+          
+          if (!error) {
+            setIsValidToken(true)
+          } else {
+            console.error('Error setting session:', error)
             setError('Invalid or expired reset link. Please request a new password reset.')
             setIsValidToken(false)
           }
         }
-        setCheckingToken(false)
-      } else {
-        // Check if user has an active session (from Supabase auto-login)
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        if (session?.user?.aud === 'authenticated' && session.user.email) {
-          // User is logged in from clicking the reset link - this is valid for password reset
-          setIsValidToken(true)
-          console.log('User authenticated via reset link, allowing password reset')
-        } else {
+        // Handle query param tokens (from custom templates)
+        else if (urlType === 'recovery' && urlToken) {
+          console.log('Processing URL-based recovery token')
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: urlToken,
+            type: 'recovery'
+          })
+          
+          if (!error && data.user) {
+            setIsValidToken(true)
+          } else {
+            console.error('Error verifying token:', error)
+            setError('Invalid or expired reset link. Please request a new password reset.')
+            setIsValidToken(false)
+          }
+        }
+        else {
+          // No valid token or session found
           setError('Invalid or expired reset link. Please request a new password reset.')
           setIsValidToken(false)
         }
+        
+      } catch (err) {
+        console.error('Error checking recovery token:', err)
+        setError('An error occurred while validating the reset link. Please try again.')
+        setIsValidToken(false)
+      } finally {
         setCheckingToken(false)
       }
     }
