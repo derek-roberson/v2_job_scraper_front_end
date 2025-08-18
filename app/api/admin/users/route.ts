@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
 
-    // Simple query to get all user profiles
+    // Query to get all user profiles (RLS now allows admins to see all profiles)
     const { data: profiles, error: profilesError } = await supabase
       .from('user_profiles')
       .select('*')
