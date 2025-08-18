@@ -1,6 +1,4 @@
--- Create a secure function that allows admin users to update user profiles
--- This function will run with elevated privileges and bypass RLS
-
+-- Fix ambiguous column reference in admin update function
 CREATE OR REPLACE FUNCTION update_user_profile_for_admin(
   target_user_id uuid,
   new_account_type text DEFAULT NULL,
@@ -46,7 +44,7 @@ BEGIN
     RAISE EXCEPTION 'User not found';
   END IF;
   
-  -- Build and execute update
+  -- Build and execute update with fully qualified column names to avoid ambiguity
   UPDATE user_profiles SET
     account_type = COALESCE(new_account_type, user_profiles.account_type),
     full_name = COALESCE(new_full_name, user_profiles.full_name),
