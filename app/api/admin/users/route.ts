@@ -78,12 +78,26 @@ export async function GET(req: NextRequest) {
     console.log('Found profiles:', profiles?.length || 0)
     console.log('Profile subscription tiers:', profiles?.map(p => p.subscription_tier))
     console.log('Profile account types:', profiles?.map(p => p.account_type))
+    console.log('Profile IDs:', profiles?.map(p => p.id.substring(0, 8)))
     console.log('Sample profile:', profiles?.[0])
+    
+    // Also check if we're getting all profiles or if RLS is filtering
+    console.log('Current user ID:', user.id)
+    console.log('Admin check passed for user:', adminProfile)
 
-    // Get total count
+    // Get total count and all profiles (for debugging)
     const { count } = await supabase
       .from('user_profiles')
       .select('*', { count: 'exact', head: true })
+      
+    const { data: allProfiles } = await supabase
+      .from('user_profiles')
+      .select('id, account_type, subscription_tier')
+      .order('created_at', { ascending: false })
+    
+    console.log('Total count from count query:', count)
+    console.log('All profiles (unpaginated):', allProfiles?.length)
+    console.log('All profile details:', allProfiles)
 
     // Simple user list with placeholder emails for now
     const users = (profiles || []).map(profile => ({
