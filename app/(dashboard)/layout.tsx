@@ -89,15 +89,25 @@ export default function DashboardLayout({
             </Button>
           </Link>
           {userProfile?.account_type === 'admin' && (
-            <Link href="/notifications" onClick={() => setSidebarOpen(false)}>
-              <Button 
-                variant={isActivePath('/notifications') ? 'default' : 'ghost'} 
-                className="w-full justify-start"
-              >
-                <NotificationIndicator />
-                <span className="ml-2">Notifications (Admin)</span>
-              </Button>
-            </Link>
+            <>
+              <Link href="/admin" onClick={() => setSidebarOpen(false)}>
+                <Button 
+                  variant={isActivePath('/admin') ? 'default' : 'ghost'} 
+                  className="w-full justify-start"
+                >
+                  Admin Panel
+                </Button>
+              </Link>
+              <Link href="/notifications" onClick={() => setSidebarOpen(false)}>
+                <Button 
+                  variant={isActivePath('/notifications') ? 'default' : 'ghost'} 
+                  className="w-full justify-start"
+                >
+                  <NotificationIndicator />
+                  <span className="ml-2">Notifications</span>
+                </Button>
+              </Link>
+            </>
           )}
           {/* Hide pricing for privileged users */}
           {!subscription?.isPrivileged && (
