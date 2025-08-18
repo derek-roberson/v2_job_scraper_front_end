@@ -33,10 +33,16 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     canceled_at: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : null,
   }
 
+  // Also update the subscription_tier based on the subscription status
+  const subscriptionTier = subscription.status === 'active' ? 'pro' : 'free'
+  
   // Update the user's profile with subscription data
   const { error } = await supabase
     .from('user_profiles')
-    .update(subscriptionData)
+    .update({
+      ...subscriptionData,
+      subscription_tier: subscriptionTier
+    })
     .eq('id', userId)
 
   if (error) {
@@ -61,6 +67,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       stripe_subscription_id: null,
       stripe_price_id: null,
       status: 'canceled',
+      subscription_tier: 'free',
       current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
     })
     .eq('id', userId)

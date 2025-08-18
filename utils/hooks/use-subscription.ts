@@ -44,7 +44,16 @@ export function useSubscription() {
 
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('subscription_tier')
+        .select(`
+          subscription_tier,
+          stripe_subscription_id,
+          stripe_price_id,
+          status,
+          current_period_start,
+          current_period_end,
+          cancel_at,
+          canceled_at
+        `)
         .eq('id', user.id)
         .single()
 
@@ -52,25 +61,52 @@ export function useSubscription() {
         return getFreePlanStatus()
       }
 
-      // Determine the plan based on subscription_tier stored in user_profiles
-      const isPro = data.subscription_tier === 'pro'
-      const planId = isPro ? 'pro' : 'free'
+      // Check if user has active Stripe subscription
+      const hasActiveStripeSubscription = 
+        data.stripe_subscription_id && 
+        data.status === 'active'
+
+      // Determine if user is in trial
+      const now = new Date()
+      const currentPeriodStart = data.current_period_start ? new Date(data.current_period_start) : null
+      const currentPeriodEnd = data.current_period_end ? new Date(data.current_period_end) : null
+      
+      // Check if this is a trial (less than 7 days from start to end, and no payment yet)
+      const isTrial = currentPeriodStart && currentPeriodEnd && 
+        (currentPeriodEnd.getTime() - currentPeriodStart.getTime()) <= (7 * 24 * 60 * 60 * 1000) &&
+        hasActiveStripeSubscription
+
+      // Determine plan based on Stripe data
+      let planId: string
+      if (hasActiveStripeSubscription || isTrial) {
+        // Find plan by Stripe price ID
+        const plan = subscriptionPlans.find(p => p.priceId === data.stripe_price_id)
+        planId = plan?.id || 'pro' // Default to pro if price ID matches
+      } else if (data.subscription_tier === 'pro') {
+        // Legacy: fall back to subscription_tier
+        planId = 'pro'
+      } else {
+        planId = 'free'
+      }
 
       const plan = subscriptionPlans.find(p => p.id === planId) || subscriptionPlans[0]
       
-      // Determine capabilities based on plan
-      const canCreateQueries = planId === 'pro'
-      const canResumeQueries = planId === 'pro'
-      const canFetchNewJobs = planId === 'pro'
-      const isActive = planId === 'pro'
+      // Determine capabilities
+      const isActive = hasActiveStripeSubscription || planId === 'pro'
+      const canCreateQueries = isActive || isTrial
+      const canResumeQueries = isActive || isTrial  
+      const canFetchNewJobs = isActive || isTrial
       
       return {
         isActive,
-        isTrial: false, // Simplified: no trial tracking in user_profiles
+        isTrial: isTrial || false,
         isPrivileged: false,
         planId: plan.id,
         planName: plan.name,
-        status: planId, // Use planId as status
+        status: data.status || planId,
+        currentPeriodEnd: data.current_period_end || undefined,
+        cancelAt: data.cancel_at || undefined,
+        trialEndsAt: isTrial && currentPeriodEnd ? currentPeriodEnd.toISOString() : undefined,
         canCreateQueries,
         canResumeQueries,
         canFetchNewJobs,

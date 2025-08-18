@@ -46,7 +46,7 @@ export const subscriptionPlans: SubscriptionPlan[] = [
       'Advanced filters',
       'Priority support',
     ],
-    priceId: 'price_pro_monthly', // Replace with actual Stripe price ID
+    priceId: 'price_1RxOkkAbsZI7KsCx9X1slt3a', // Actual Stripe price ID
     price: 10,
     currency: 'usd',
     interval: 'month',
