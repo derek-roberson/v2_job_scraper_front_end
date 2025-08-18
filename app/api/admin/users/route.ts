@@ -97,10 +97,11 @@ export async function GET(req: NextRequest) {
     // Debug logging
     console.log('Found total profiles:', allProfiles?.length || 0)
     console.log('Paginated profiles count:', profiles?.length || 0)
+    console.log('Profile emails:', profiles?.map((p: UserProfile) => p.email))
     console.log('Profile subscription tiers:', profiles?.map((p: UserProfile) => p.subscription_tier))
     console.log('Profile account types:', profiles?.map((p: UserProfile) => p.account_type))
     console.log('Profile IDs:', profiles?.map((p: UserProfile) => p.id.substring(0, 8)))
-    console.log('Sample profile:', profiles?.[0])
+    console.log('Sample profile with email:', profiles?.[0])
     
     const totalCount = allProfiles?.length || 0
 
