@@ -4,6 +4,7 @@
 CREATE OR REPLACE FUNCTION get_all_user_profiles_for_admin()
 RETURNS TABLE (
   id uuid,
+  email text,
   full_name text,
   company text,
   account_type text,
@@ -30,10 +31,11 @@ BEGIN
     RAISE EXCEPTION 'Access denied: Admin privileges required';
   END IF;
   
-  -- If they are admin, return all user profiles
+  -- If they are admin, return all user profiles with emails from auth.users
   RETURN QUERY 
   SELECT 
     up.id,
+    au.email::text,
     up.full_name,
     up.company,
     up.account_type,
@@ -44,6 +46,7 @@ BEGIN
     up.created_at,
     up.updated_at
   FROM user_profiles up
+  LEFT JOIN auth.users au ON up.id = au.id
   ORDER BY up.created_at DESC;
 END;
 $$;

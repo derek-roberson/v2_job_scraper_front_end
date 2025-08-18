@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 interface UserProfile {
   id: string
+  email: string | null
   full_name: string | null
   company: string | null
   account_type: string
@@ -103,10 +104,10 @@ export async function GET(req: NextRequest) {
     
     const totalCount = allProfiles?.length || 0
 
-    // Simple user list with placeholder emails for now
+    // User list with real emails from auth.users
     const users = (profiles || []).map(profile => ({
       id: profile.id,
-      email: `user-${profile.id.substring(0, 8)}@example.com`,
+      email: profile.email || 'No email',
       full_name: profile.full_name,
       company: profile.company,
       account_type: profile.account_type,

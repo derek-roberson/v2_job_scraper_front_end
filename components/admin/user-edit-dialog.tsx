@@ -33,9 +33,7 @@ interface UserEditDialogProps {
 export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogProps) {
   const [formData, setFormData] = useState({
     full_name: user.full_name || '',
-    account_type: user.account_type,
-    subscription_tier: user.subscription_tier,
-    max_active_queries: user.max_active_queries
+    account_type: user.account_type
   })
   const [hasChanges, setHasChanges] = useState(false)
 
@@ -45,9 +43,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
   useEffect(() => {
     setFormData({
       full_name: user.full_name || '',
-      account_type: user.account_type,
-      subscription_tier: user.subscription_tier,
-      max_active_queries: user.max_active_queries
+      account_type: user.account_type
     })
     setHasChanges(false)
   }, [user])
@@ -56,9 +52,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
   useEffect(() => {
     const hasChanged = 
       formData.full_name !== (user.full_name || '') ||
-      formData.account_type !== user.account_type ||
-      formData.subscription_tier !== user.subscription_tier ||
-      formData.max_active_queries !== user.max_active_queries
+      formData.account_type !== user.account_type
 
     setHasChanges(hasChanged)
   }, [formData, user])
@@ -77,12 +71,6 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
       }
       if (formData.account_type !== user.account_type) {
         updates.account_type = formData.account_type
-      }
-      if (formData.subscription_tier !== user.subscription_tier) {
-        updates.subscription_tier = formData.subscription_tier
-      }
-      if (formData.max_active_queries !== user.max_active_queries) {
-        updates.max_active_queries = formData.max_active_queries
       }
 
       await updateUser.mutateAsync({
@@ -177,52 +165,36 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
             </div>
           </div>
 
-          {/* Subscription Tier */}
+          {/* Subscription Tier - Read Only */}
           <div className="space-y-2">
             <Label>Subscription Tier</Label>
-            <Select
-              value={formData.subscription_tier}
-              onValueChange={(value: 'free' | 'pro') => 
-                setFormData({ ...formData, subscription_tier: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="pro">Pro ($10/month)</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="p-2 border rounded-md bg-gray-50">
+              <div className="flex items-center justify-between">
+                <span className="capitalize">{user.subscription_tier}</span>
+                <Badge variant="outline">Managed by Stripe</Badge>
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              Subscription status is automatically managed by Stripe payments
+            </div>
           </div>
 
-          {/* Max Active Queries */}
+          {/* Max Active Queries - Read Only */}
           <div className="space-y-2">
-            <Label htmlFor="max_queries">Max Active Queries</Label>
-            <Select
-              value={formData.max_active_queries.toString()}
-              onValueChange={(value) => 
-                setFormData({ ...formData, max_active_queries: parseInt(value) })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 Query</SelectItem>
-                <SelectItem value="3">3 Queries</SelectItem>
-                <SelectItem value="5">5 Queries</SelectItem>
-                <SelectItem value="10">10 Queries</SelectItem>
-                <SelectItem value="25">25 Queries</SelectItem>
-                <SelectItem value="50">50 Queries</SelectItem>
-                <SelectItem value="-1">Unlimited</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Max Active Queries</Label>
+            <div className="p-2 border rounded-md bg-gray-50">
+              <div className="flex items-center justify-between">
+                <span>
+                  {user.max_active_queries === -1 
+                    ? 'Unlimited' 
+                    : `${user.max_active_queries} queries`
+                  }
+                </span>
+                <Badge variant="outline">Auto-calculated</Badge>
+              </div>
+            </div>
             <div className="text-xs text-gray-500">
-              {formData.max_active_queries === -1 
-                ? 'User can create unlimited active queries'
-                : `User can have up to ${formData.max_active_queries} active queries`
-              }
+              Query limits are automatically determined by account type and subscription
             </div>
           </div>
 

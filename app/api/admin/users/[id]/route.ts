@@ -73,6 +73,22 @@ export async function PATCH(
       full_name 
     } = body
 
+    // Prevent manual editing of max_active_queries (managed by trigger)
+    if (max_active_queries !== undefined) {
+      return NextResponse.json(
+        { error: 'max_active_queries is automatically set by account type and cannot be edited manually' },
+        { status: 400 }
+      )
+    }
+
+    // Prevent manual editing of subscription_tier (managed by Stripe)
+    if (subscription_tier !== undefined) {
+      return NextResponse.json(
+        { error: 'subscription_tier is managed by Stripe and cannot be edited manually' },
+        { status: 400 }
+      )
+    }
+
     // Validate account_type if provided
     if (account_type && !['user', 'privileged', 'admin'].includes(account_type)) {
       return NextResponse.json(
@@ -81,22 +97,12 @@ export async function PATCH(
       )
     }
 
-    // Validate subscription_tier if provided
-    if (subscription_tier && !['free', 'pro'].includes(subscription_tier)) {
-      return NextResponse.json(
-        { error: 'Invalid subscription tier' },
-        { status: 400 }
-      )
-    }
-
-    // Build update object with only provided fields
+    // Build update object with only allowed fields
     const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString()
     }
 
     if (account_type !== undefined) updateData.account_type = account_type
-    if (subscription_tier !== undefined) updateData.subscription_tier = subscription_tier
-    if (max_active_queries !== undefined) updateData.max_active_queries = max_active_queries
     if (full_name !== undefined) updateData.full_name = full_name
 
     // Update the user
