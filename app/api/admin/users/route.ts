@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/utils/supabase'
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,8 +14,20 @@ export async function GET(req: NextRequest) {
 
     const token = authHeader.substring(7)
     
+    // Create an authenticated Supabase client with the user's token
+    const supabaseUrl = process.env.SUPABASE_URL!
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    })
+    
     // Verify the user is authenticated and get their profile
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
       console.error('Auth error:', authError)
