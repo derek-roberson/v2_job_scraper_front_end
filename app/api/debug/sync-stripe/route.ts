@@ -54,17 +54,32 @@ export async function POST(req: NextRequest) {
     // Find Stripe customer by email
     const customers = await stripe.customers.list({
       email: user.email,
-      limit: 1
+      limit: 10  // Get more customers to see if there are multiple
     })
 
+    console.log('Searching for customers with email:', user.email)
+    console.log('Found customers:', customers.data.length)
+
     if (customers.data.length === 0) {
+      // Also try to find any customers with similar emails or metadata
+      const allRecentCustomers = await stripe.customers.list({ limit: 10 })
+      
       return NextResponse.json({ 
         error: 'No Stripe customer found with your email',
-        email: user.email 
+        email: user.email,
+        debug_info: {
+          customers_checked: customers.data.length,
+          recent_customers_preview: allRecentCustomers.data.map(c => ({
+            id: c.id,
+            email: c.email,
+            created: new Date(c.created * 1000).toISOString()
+          }))
+        }
       }, { status: 404 })
     }
 
     const customer = customers.data[0]
+    console.log('Found customer:', customer.id, 'email:', customer.email)
 
     // Get active subscriptions for this customer
     const subscriptions = await stripe.subscriptions.list({
@@ -73,9 +88,20 @@ export async function POST(req: NextRequest) {
       limit: 10
     })
 
+    console.log('Found subscriptions for customer:', subscriptions.data.length)
+    subscriptions.data.forEach(sub => {
+      console.log('Subscription:', sub.id, 'status:', sub.status, 'created:', new Date(sub.created * 1000).toISOString())
+    })
+
     if (subscriptions.data.length === 0) {
       return NextResponse.json({ 
-        error: 'No subscriptions found for your account' 
+        error: 'No subscriptions found for your account',
+        debug_info: {
+          customer_id: customer.id,
+          customer_email: customer.email,
+          customer_created: new Date(customer.created * 1000).toISOString(),
+          subscriptions_count: subscriptions.data.length
+        }
       }, { status: 404 })
     }
 
