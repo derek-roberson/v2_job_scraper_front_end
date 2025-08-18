@@ -11,6 +11,7 @@ export interface UserProfile {
   max_active_queries: number
   is_suspended: boolean
   last_login_at?: string
+  onboarding_completed: boolean
   created_at: string
   updated_at: string
 }
@@ -35,6 +36,7 @@ export interface NotificationPreferences {
 export interface UpdateProfileRequest {
   full_name?: string
   company?: string
+  onboarding_completed?: boolean
 }
 
 export interface UpdateNotificationPreferencesRequest {
@@ -75,6 +77,7 @@ export function useUserProfile() {
               subscription_tier: 'free',
               max_active_queries: 3,
               is_suspended: false,
+              onboarding_completed: false,
             })
             .select()
             .single()

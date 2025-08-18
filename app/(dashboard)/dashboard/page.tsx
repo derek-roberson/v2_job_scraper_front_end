@@ -6,11 +6,13 @@ import { useAuth } from '@/utils/hooks/use-auth'
 import { useQueries, useQueryMutations } from '@/utils/hooks/use-queries'
 import { useJobStats } from '@/utils/hooks/use-jobs'
 import { useCanCreateQuery, useSubscription } from '@/utils/hooks/use-subscription'
+import { useUserProfile, useProfileMutations } from '@/utils/hooks/use-profile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CreateQueryForm } from '@/components/queries/create-query-form'
 import { QueryList } from '@/components/queries/query-list'
+import { NotificationOnboarding } from '@/components/onboarding/notification-onboarding'
 import { AlertCircle } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -24,6 +26,19 @@ export default function DashboardPage() {
   const { data: jobStats } = useJobStats()
   const { data: canCreate } = useCanCreateQuery()
   const { data: subscription } = useSubscription()
+  const { data: profile } = useUserProfile()
+  const { updateProfile } = useProfileMutations()
+
+  // Check if user needs onboarding
+  const shouldShowOnboarding = profile && !profile.onboarding_completed
+
+  const handleOnboardingComplete = async () => {
+    try {
+      await updateProfile.mutateAsync({ onboarding_completed: true })
+    } catch (error) {
+      console.error('Failed to mark onboarding as completed:', error)
+    }
+  }
 
   const handleCreateQuery = async (data: {
     keywords: string
@@ -65,11 +80,17 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {user?.email}</p>
-      </div>
+    <>
+      <NotificationOnboarding 
+        open={!!shouldShowOnboarding}
+        onComplete={handleOnboardingComplete}
+      />
+      
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-gray-600">Welcome back, {user?.email}</p>
+        </div>
 
       {/* Trial/Subscription Status Banner */}
       {subscription && (
@@ -282,6 +303,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   )
 }
