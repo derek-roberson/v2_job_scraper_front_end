@@ -120,7 +120,7 @@ export async function PATCH(
       )
     }
 
-    const existingUser = allProfiles?.find((p: any) => p.id === userId)
+    const existingUser = allProfiles?.find((p: { id: string }) => p.id === userId)
     console.log('User exists check:', { exists: !!existingUser, userId })
 
     if (!existingUser) {
@@ -149,10 +149,10 @@ export async function PATCH(
     }
 
     // The function returns an array, get the first result
-    const user = Array.isArray(updatedUser) ? updatedUser[0] : updatedUser
+    const updatedProfile = Array.isArray(updatedUser) ? updatedUser[0] : updatedUser
 
     return NextResponse.json({
-      user: user,
+      user: updatedProfile,
       message: 'User updated successfully'
     })
 
