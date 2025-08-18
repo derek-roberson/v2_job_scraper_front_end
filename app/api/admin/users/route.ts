@@ -86,49 +86,51 @@ export async function GET(req: NextRequest) {
 
     // We'll count after filtering since we need to include email search
 
-    // First, get all user profiles that match account type filter
-    const allProfilesQuery = baseQuery.order('created_at', { ascending: false })
-    const { data: allUserProfiles, error: usersError } = await allProfilesQuery
+    // First, get all auth users (this is the source of truth)
+    const { data: allAuthUsers, error: authUsersError } = await supabase
+      .from('auth.users')
+      .select('id, email, created_at')
+      .order('created_at', { ascending: false })
 
-    if (usersError) {
-      console.error('Error fetching users:', usersError)
+    if (authUsersError) {
+      console.error('Error fetching auth users:', authUsersError)
       return NextResponse.json(
-        { error: 'Failed to fetch users' },
+        { error: 'Failed to fetch auth users' },
         { status: 500 }
       )
     }
 
-    // Fetch user emails from auth.users table
-    const allUserIds = allUserProfiles?.map(profile => profile.id) || []
-    let authUsers: { id: string; email: string }[] = []
-    
-    if (allUserIds.length > 0) {
-      const { data: authData, error: authError } = await supabase
-        .from('auth.users')
-        .select('id, email')
-        .in('id', allUserIds)
+    // Get all user profiles
+    const allProfilesQuery = baseQuery.order('created_at', { ascending: false })
+    const { data: allUserProfiles, error: profilesError } = await allProfilesQuery
 
-      if (authError) {
-        console.error('Error fetching auth users:', authError)
-        // Fall back to placeholder emails if auth query fails
-        authUsers = allUserIds.map(id => ({
-          id,
-          email: `user-${id.substring(0, 8)}@example.com`
-        }))
-      } else {
-        authUsers = (authData || []) as { id: string; email: string }[]
-      }
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError)
+      return NextResponse.json(
+        { error: 'Failed to fetch profiles' },
+        { status: 500 }
+      )
     }
 
-    // Combine profile data with email data
-    let allUsers = allUserProfiles?.map(profile => {
-      const authUser = authUsers.find(au => au.id === profile.id)
+    // Combine auth users with their profiles (some may not have profiles yet)
+    let allUsers = (allAuthUsers || []).map(authUser => {
+      const profile = allUserProfiles?.find(p => p.id === authUser.id)
+      
       return {
-        ...profile,
-        email: authUser?.email || `user-${profile.id.substring(0, 8)}@example.com`,
+        id: authUser.id,
+        email: authUser.email || `user-${authUser.id.substring(0, 8)}@example.com`,
+        full_name: profile?.full_name || null,
+        company: profile?.company || null,
+        account_type: profile?.account_type || 'user',
+        subscription_tier: profile?.subscription_tier || 'free',
+        max_active_queries: profile?.max_active_queries || 3,
+        is_suspended: profile?.is_suspended || false,
+        last_login_at: profile?.last_login_at || null,
+        created_at: profile?.created_at || authUser.created_at,
+        updated_at: profile?.updated_at || authUser.created_at,
         status: 'active' // We'll keep this as active for now
       }
-    }) || []
+    })
 
     // Apply search filter on the combined data (search by name or email)
     if (search) {
@@ -145,47 +147,22 @@ export async function GET(req: NextRequest) {
     // Apply pagination to the filtered results
     const users = allUsers.slice(offset, offset + limit)
 
-    // Get additional stats
-    const statsPromises = [
-      // Total users
-      supabase
-        .from('user_profiles')
-        .select('*', { count: 'exact', head: true }),
-      
-      // Free users
-      supabase
-        .from('user_profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('subscription_tier', 'free'),
-      
-      // Pro subscribers (pro tier)
-      supabase
-        .from('user_profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('subscription_tier', 'pro'),
-      
-      // Privileged users
-      supabase
-        .from('user_profiles')
-        .select('*', { count: 'exact', head: true })
-        .in('account_type', ['admin', 'privileged']),
-      
-      // Active queries system-wide
-      supabase
-        .from('queries')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
-    ]
-
-    const [totalUsers, freeUsers, proUsers, privilegedUsers, activeQueries] = await Promise.all(statsPromises)
-
+    // Calculate stats based on the combined user data
     const stats = {
-      totalUsers: totalUsers.count || 0,
-      freeUsers: freeUsers.count || 0,
-      proUsers: proUsers.count || 0,
-      privilegedUsers: privilegedUsers.count || 0,
-      activeQueries: activeQueries.count || 0
+      totalUsers: allUsers.length,
+      freeUsers: allUsers.filter(u => u.subscription_tier === 'free').length,
+      proUsers: allUsers.filter(u => u.subscription_tier === 'pro').length,
+      privilegedUsers: allUsers.filter(u => u.account_type === 'admin' || u.account_type === 'privileged').length,
+      activeQueries: 0 // We'll get this separately
     }
+
+    // Get active queries count
+    const { count: activeQueriesCount } = await supabase
+      .from('queries')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+    
+    stats.activeQueries = activeQueriesCount || 0
 
     return NextResponse.json({
       users,
