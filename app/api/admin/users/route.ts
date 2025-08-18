@@ -74,6 +74,12 @@ export async function GET(req: NextRequest) {
       )
     }
 
+    // Debug logging
+    console.log('Found profiles:', profiles?.length || 0)
+    console.log('Profile subscription tiers:', profiles?.map(p => p.subscription_tier))
+    console.log('Profile account types:', profiles?.map(p => p.account_type))
+    console.log('Sample profile:', profiles?.[0])
+
     // Get total count
     const { count } = await supabase
       .from('user_profiles')
