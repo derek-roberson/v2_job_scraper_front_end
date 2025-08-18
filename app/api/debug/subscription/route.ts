@@ -1,18 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/utils/supabase'
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET(req: NextRequest) {
   try {
-    // Get user ID from query params for debugging
-    const { searchParams } = new URL(req.url)
-    const userId = searchParams.get('userId')
+    // Get authorization header
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Missing or invalid authorization header' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.substring(7)
     
-    if (!userId) {
-      return NextResponse.json({ error: 'userId parameter required' }, { status: 400 })
+    // Create an authenticated Supabase client with the user's token
+    const supabaseUrl = process.env.SUPABASE_URL!
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    })
+
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
 
     // Get user profile data
-    const { data: profile, error } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select(`
         id,
@@ -29,25 +51,27 @@ export async function GET(req: NextRequest) {
         created_at,
         updated_at
       `)
-      .eq('id', userId)
+      .eq('id', user.id)
       .single()
 
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Database error', details: error }, { status: 500 })
-    }
-
     return NextResponse.json({
+      auth_user: {
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+      },
       profile,
+      profile_error: profileError,
       debug_info: {
-        hasStripeSubscription: !!profile.stripe_subscription_id,
-        hasStripeCustomer: !!profile.stripe_customer_id,
-        hasStripePriceId: !!profile.stripe_price_id,
-        subscriptionStatus: profile.status,
-        subscriptionTier: profile.subscription_tier,
+        profileExists: !!profile,
+        hasStripeSubscription: !!profile?.stripe_subscription_id,
+        hasStripeCustomer: !!profile?.stripe_customer_id,
+        hasStripePriceId: !!profile?.stripe_price_id,
+        subscriptionStatus: profile?.status,
+        subscriptionTier: profile?.subscription_tier,
         currentTime: new Date().toISOString(),
-        periodStart: profile.current_period_start,
-        periodEnd: profile.current_period_end,
+        periodStart: profile?.current_period_start,
+        periodEnd: profile?.current_period_end,
       }
     })
 
