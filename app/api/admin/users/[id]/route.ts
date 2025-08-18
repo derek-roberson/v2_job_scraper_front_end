@@ -105,6 +105,24 @@ export async function PATCH(
     if (account_type !== undefined) updateData.account_type = account_type
     if (full_name !== undefined) updateData.full_name = full_name
 
+    console.log('Update attempt:', { userId, updateData })
+
+    // First check if the user exists
+    const { data: existingUser, error: existsError } = await supabase
+      .from('user_profiles')
+      .select('id, account_type')
+      .eq('id', userId)
+      .single()
+
+    console.log('User exists check:', { existingUser, existsError })
+
+    if (existsError || !existingUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
     // Update the user
     const { data: updatedUser, error: updateError } = await supabase
       .from('user_profiles')
@@ -123,6 +141,8 @@ export async function PATCH(
         updated_at
       `)
       .single()
+
+    console.log('Update result:', { updatedUser, updateError })
 
     if (updateError) {
       console.error('Error updating user:', updateError)
