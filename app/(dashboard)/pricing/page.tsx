@@ -80,6 +80,9 @@ export default function PricingPage() {
       })
 
       if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error('Subscriptions are not available at the moment. Please try again later.')
+        }
         throw new Error('Failed to create checkout session')
       }
 
@@ -87,7 +90,7 @@ export default function PricingPage() {
       
       const stripe = await getStripe()
       if (!stripe) {
-        throw new Error('Failed to load Stripe')
+        throw new Error('Payment system is not available. Please try again later.')
       }
 
       const { error } = await stripe.redirectToCheckout({ sessionId })
@@ -98,7 +101,7 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error('Subscription error:', error)
-      alert('Failed to start subscription process. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to start subscription process. Please try again.')
     } finally {
       setLoading(null)
     }
@@ -200,7 +203,7 @@ export default function PricingPage() {
           No credit card required during trial. Cancel anytime.
         </p>
         <p className="mt-2">
-          After trial ends, you'll automatically move to the Free plan unless you upgrade.
+          After trial ends, you&apos;ll automatically move to the Free plan unless you upgrade.
         </p>
       </div>
     </div>

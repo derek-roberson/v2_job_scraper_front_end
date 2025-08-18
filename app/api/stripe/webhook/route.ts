@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { stripe, isStripeConfigured } from '@/lib/stripe'
 import { supabase } from '@/utils/supabase'
 import Stripe from 'stripe'
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+// Type for accessing period fields on Stripe Subscription
+type StripeSubscriptionWithPeriod = Stripe.Subscription & {
+  current_period_start?: number
+  current_period_end?: number
+  cancel_at?: number | null
+  canceled_at?: number | null
+}
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const userId = subscription.metadata.userId
@@ -13,15 +21,16 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     return
   }
 
+  const sub = subscription as StripeSubscriptionWithPeriod
   const subscriptionData = {
     stripe_subscription_id: subscription.id,
     stripe_price_id: subscription.items.data[0]?.price.id,
     stripe_customer_id: subscription.customer as string,
     status: subscription.status,
-    current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-    cancel_at: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
-    canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+    current_period_start: sub.current_period_start ? new Date(sub.current_period_start * 1000).toISOString() : null,
+    current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+    cancel_at: sub.cancel_at ? new Date(sub.cancel_at * 1000).toISOString() : null,
+    canceled_at: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : null,
   }
 
   // Update the user's profile with subscription data
@@ -44,6 +53,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return
   }
 
+  const sub = subscription as StripeSubscriptionWithPeriod
   // Clear subscription data from the user's profile
   const { error } = await supabase
     .from('profiles')
@@ -51,7 +61,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       stripe_subscription_id: null,
       stripe_price_id: null,
       status: 'canceled',
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
     })
     .eq('id', userId)
 
@@ -62,6 +72,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 export async function POST(req: NextRequest) {
+  // Check if Stripe is configured
+  if (!isStripeConfigured() || !stripe || !webhookSecret) {
+    return NextResponse.json(
+      { error: 'Stripe webhook is not configured' },
+      { status: 503 }
+    )
+  }
+
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')
 
@@ -113,10 +131,10 @@ export async function POST(req: NextRequest) {
         break
       
       case 'invoice.payment_succeeded':
-        const invoice = event.data.object as Stripe.Invoice
+        const invoice = event.data.object as Stripe.Invoice & { subscription?: string }
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
+            invoice.subscription
           )
           await handleSubscriptionUpdate(subscription)
         }
@@ -124,7 +142,10 @@ export async function POST(req: NextRequest) {
       
       case 'invoice.payment_failed':
         // Handle failed payment - user moves to free tier
-        const failedInvoice = event.data.object as Stripe.Invoice
+        const failedInvoice = event.data.object as Stripe.Invoice & { 
+          subscription?: string 
+          subscription_details?: { metadata?: { userId?: string } }
+        }
         console.log('Payment failed for invoice:', failedInvoice.id)
         
         if (failedInvoice.subscription) {

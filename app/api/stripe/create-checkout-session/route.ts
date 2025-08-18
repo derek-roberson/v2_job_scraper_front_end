@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { stripe, isStripeConfigured } from '@/lib/stripe'
 import { supabase } from '@/utils/supabase'
 import { getPlanByPriceId } from '@/config/subscriptions'
 
 export async function POST(req: NextRequest) {
   try {
+    // Check if Stripe is configured
+    if (!isStripeConfigured() || !stripe) {
+      return NextResponse.json(
+        { error: 'Stripe is not configured' },
+        { status: 503 }
+      )
+    }
+
     const { priceId, userId, userEmail } = await req.json()
 
     if (!priceId || !userId || !userEmail) {

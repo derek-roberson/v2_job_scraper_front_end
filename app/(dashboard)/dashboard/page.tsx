@@ -96,11 +96,11 @@ export default function DashboardPage() {
                 <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium text-blue-900">
-                    You're on a free trial of the Pro plan
+                    You&apos;re on a free trial of the Pro plan
                   </p>
                   <p className="text-sm text-blue-700 mt-1">
                     Your trial ends on {new Date(subscription.trialEndsAt).toLocaleDateString()}. 
-                    After that, you'll be moved to the Free plan unless you upgrade.
+                    After that, you&apos;ll be moved to the Free plan unless you upgrade.
                   </p>
                 </div>
               </div>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                   <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium text-yellow-900">
-                      You're on the Free plan
+                      You&apos;re on the Free plan
                     </p>
                     <p className="text-sm text-yellow-700 mt-1">
                       You can view previously fetched jobs but cannot create or resume queries.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,15 +28,7 @@ export function SubscriptionManager() {
   const [loading, setLoading] = useState(true)
   const [portalLoading, setPortalLoading] = useState(false)
 
-  useEffect(() => {
-    if (user && !subscriptionStatus?.isPrivileged) {
-      fetchSubscription()
-    } else {
-      setLoading(false)
-    }
-  }, [user, subscriptionStatus?.isPrivileged])
-
-  const fetchSubscription = async () => {
+  const fetchSubscription = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -51,7 +43,15 @@ export function SubscriptionManager() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user && !subscriptionStatus?.isPrivileged) {
+      fetchSubscription()
+    } else {
+      setLoading(false)
+    }
+  }, [user, subscriptionStatus?.isPrivileged, fetchSubscription])
 
   const openCustomerPortal = async () => {
     try {
@@ -68,6 +68,9 @@ export function SubscriptionManager() {
       })
 
       if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error('Billing portal is not available at the moment. Please try again later.')
+        }
         throw new Error('Failed to create portal session')
       }
 
@@ -75,7 +78,7 @@ export function SubscriptionManager() {
       window.location.href = url
     } catch (error) {
       console.error('Error opening customer portal:', error)
-      alert('Failed to open billing portal. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to open billing portal. Please try again.')
     } finally {
       setPortalLoading(false)
     }

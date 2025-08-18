@@ -11,7 +11,7 @@ import { NotificationSettings } from '@/components/settings/notification-setting
 import { AccountInfo } from '@/components/settings/account-info'
 import { SubscriptionManager } from '@/components/subscription/subscription-manager'
 import { useQueryClient } from '@tanstack/react-query'
-import { User, Bell, Shield, CreditCard, RefreshCw } from 'lucide-react'
+import { User, Bell, Shield, RefreshCw } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user } = useAuth()
