@@ -26,6 +26,9 @@ function VerifyEmailContent() {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
       })
 
       if (error) {
