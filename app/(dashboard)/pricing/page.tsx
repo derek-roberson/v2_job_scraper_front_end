@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { subscriptionPlans } from '@/config/subscriptions'
 import { useAuth } from '@/utils/hooks/use-auth'
 import { useSubscription } from '@/utils/hooks/use-subscription'
-import { getStripe } from '@/lib/stripe-client'
+import { getStripe } from '@/utils/stripe-client'
 
 export default function PricingPage() {
   const router = useRouter()

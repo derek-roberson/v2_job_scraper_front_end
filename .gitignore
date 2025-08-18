@@ -165,7 +165,6 @@ android/app/release
 # ===============================================
 build/
 dist/
-lib/
 lib-cov/
 out/
 target/
