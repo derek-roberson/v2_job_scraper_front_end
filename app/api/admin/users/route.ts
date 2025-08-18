@@ -65,12 +65,9 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
 
-    // Query to get all user profiles (RLS now allows admins to see all profiles)
-    const { data: profiles, error: profilesError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    // Use the admin function to get all user profiles (bypasses RLS securely)
+    const { data: allProfiles, error: profilesError } = await supabase
+      .rpc('get_all_user_profiles_for_admin')
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError)
@@ -80,30 +77,18 @@ export async function GET(req: NextRequest) {
       )
     }
 
+    // Apply pagination to the results
+    const profiles = allProfiles?.slice(offset, offset + limit)
+
     // Debug logging
-    console.log('Found profiles:', profiles?.length || 0)
+    console.log('Found total profiles:', allProfiles?.length || 0)
+    console.log('Paginated profiles count:', profiles?.length || 0)
     console.log('Profile subscription tiers:', profiles?.map(p => p.subscription_tier))
     console.log('Profile account types:', profiles?.map(p => p.account_type))
-    console.log('Profile IDs:', profiles?.map(p => p.id.substring(0, 8)))
+    console.log('Profile IDs:', profiles?.map(p => p.id.toString().substring(0, 8)))
     console.log('Sample profile:', profiles?.[0])
     
-    // Also check if we're getting all profiles or if RLS is filtering
-    console.log('Current user ID:', user.id)
-    console.log('Admin check passed for user:', adminProfile)
-
-    // Get total count and all profiles (for debugging)
-    const { count } = await supabase
-      .from('user_profiles')
-      .select('*', { count: 'exact', head: true })
-      
-    const { data: allProfiles } = await supabase
-      .from('user_profiles')
-      .select('id, account_type, subscription_tier')
-      .order('created_at', { ascending: false })
-    
-    console.log('Total count from count query:', count)
-    console.log('All profiles (unpaginated):', allProfiles?.length)
-    console.log('All profile details:', allProfiles)
+    const totalCount = allProfiles?.length || 0
 
     // Simple user list with placeholder emails for now
     const users = (profiles || []).map(profile => ({
@@ -121,12 +106,12 @@ export async function GET(req: NextRequest) {
       status: 'active'
     }))
 
-    // Basic stats
+    // Basic stats - calculate from all profiles, not just the paginated ones
     const stats = {
-      totalUsers: count || 0,
-      freeUsers: users.filter(u => u.subscription_tier === 'free').length,
-      proUsers: users.filter(u => u.subscription_tier === 'pro').length,
-      privilegedUsers: users.filter(u => ['admin', 'privileged'].includes(u.account_type)).length,
+      totalUsers: totalCount,
+      freeUsers: allProfiles?.filter(u => u.subscription_tier === 'free').length || 0,
+      proUsers: allProfiles?.filter(u => u.subscription_tier === 'pro').length || 0,
+      privilegedUsers: allProfiles?.filter(u => ['admin', 'privileged'].includes(u.account_type)).length || 0,
       activeQueries: 0
     }
 
@@ -136,8 +121,8 @@ export async function GET(req: NextRequest) {
       pagination: {
         page,
         limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
       }
     })
 
