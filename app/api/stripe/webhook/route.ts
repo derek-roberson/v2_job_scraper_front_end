@@ -14,12 +14,18 @@ type StripeSubscriptionWithPeriod = Stripe.Subscription & {
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+  console.log('Handling subscription update:', subscription.id, 'status:', subscription.status)
+  console.log('Subscription metadata:', subscription.metadata)
+  
   const userId = subscription.metadata.userId
   
   if (!userId) {
-    console.error('No userId in subscription metadata')
+    console.error('No userId in subscription metadata:', subscription.metadata)
+    console.error('Full subscription object keys:', Object.keys(subscription))
     return
   }
+
+  console.log('Found userId in subscription metadata:', userId)
 
   const sub = subscription as StripeSubscriptionWithPeriod
   const subscriptionData = {
@@ -34,8 +40,11 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   }
 
   // Also update the subscription_tier based on the subscription status
-  const subscriptionTier = subscription.status === 'active' ? 'pro' : 'free'
+  const subscriptionTier = (subscription.status === 'active' || subscription.status === 'trialing') ? 'pro' : 'free'
   
+  console.log('Updating user profile for userId:', userId)
+  console.log('Update data:', { ...subscriptionData, subscription_tier: subscriptionTier })
+
   // Update the user's profile with subscription data
   const { error } = await supabase
     .from('user_profiles')
@@ -49,6 +58,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     console.error('Error updating subscription:', error)
     throw error
   }
+
+  console.log('Successfully updated user profile for userId:', userId)
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
