@@ -22,7 +22,8 @@ import {
   ArrowLeft,
   Bell,
   Zap,
-  Shield
+  Shield,
+  AlertCircle
 } from 'lucide-react'
 import { useProfileMutations } from '@/utils/hooks/use-profile'
 
@@ -34,7 +35,7 @@ interface NotificationOnboardingProps {
 export function NotificationOnboarding({ open, onComplete }: NotificationOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [emailNotifications, setEmailNotifications] = useState(true)
-  const [respectNotificationHours, setRespectNotificationHours] = useState(false)
+  const [respectNotificationHours, setRespectNotificationHours] = useState(true)
   const [timezone, setTimezone] = useState('UTC')
   const [notificationHours, setNotificationHours] = useState<number[]>([9, 10, 11, 12, 13, 14, 15, 16, 17])
   const [saving, setSaving] = useState(false)
@@ -51,6 +52,14 @@ export function NotificationOnboarding({ open, onComplete }: NotificationOnboard
 
   const selectBusinessHours = () => {
     setNotificationHours([9, 10, 11, 12, 13, 14, 15, 16, 17])
+  }
+
+  const selectAllHours = () => {
+    setNotificationHours(Array.from({ length: 24 }, (_, i) => i))
+  }
+
+  const clearAllHours = () => {
+    setNotificationHours([])
   }
 
   const formatHour = (hour: number): string => {
@@ -169,6 +178,11 @@ export function NotificationOnboarding({ open, onComplete }: NotificationOnboard
             <p className="text-sm text-gray-600">
               Only receive notifications during your preferred hours
             </p>
+            {!respectNotificationHours && (
+              <p className="text-xs text-amber-600 mt-1">
+                ⚠️ You&apos;ll receive notifications 24/7 when jobs are found
+              </p>
+            )}
           </div>
           <Switch
             id="respect-hours-onboarding"
@@ -197,18 +211,41 @@ export function NotificationOnboarding({ open, onComplete }: NotificationOnboard
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="font-medium">Notification Hours</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={selectBusinessHours}
-                >
-                  Business Hours (9-5)
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={selectBusinessHours}
+                  >
+                    9-5
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllHours}
+                  >
+                    24/7
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllHours}
+                  >
+                    Clear
+                  </Button>
+                </div>
               </div>
               <p className="text-sm text-gray-600">
-                Jobs found outside these hours will be queued for your next notification window.
+                Select hours when you want to receive notifications. Jobs found outside these hours will be queued.
               </p>
+              {notificationHours.length < 8 && notificationHours.length > 0 && (
+                <p className="text-xs text-amber-600">
+                  💡 Tip: With limited hours, you might receive job alerts later than when they&apos;re posted
+                </p>
+              )}
               
               <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
                 {Array.from({ length: 24 }, (_, hour) => (
@@ -236,13 +273,22 @@ export function NotificationOnboarding({ open, onComplete }: NotificationOnboard
 
         <div className="bg-green-50 p-4 rounded-lg border border-green-200">
           <h4 className="font-medium text-green-900 mb-2">
-            Why timing matters
+            Finding the right balance
           </h4>
-          <p className="text-sm text-green-800">
-            Setting notification hours helps maintain work-life balance and ensures you receive 
-            job alerts when you&apos;re most likely to act on them. Jobs found outside your preferred 
-            hours will be saved and sent during your next notification window.
-          </p>
+          <div className="space-y-2 text-sm text-green-800">
+            <p className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span><strong>With time preferences:</strong> Maintain work-life balance by receiving alerts only when you want them</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
+              <span><strong>Trade-off:</strong> Jobs posted outside your hours will be queued and sent later, which might affect time-sensitive opportunities</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <Zap className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span><strong>Pro tip:</strong> Consider including early morning or evening hours to catch jobs posted outside business hours</span>
+            </p>
+          </div>
         </div>
       </div>
 
