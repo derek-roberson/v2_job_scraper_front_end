@@ -157,7 +157,7 @@ export default function DebugSubscriptionPage() {
 
           {profileData?.data && !(profileData.data as any)?.stripe_subscription_id && (
             <div className="mt-4">
-              <p className="text-yellow-600 mb-2">Stripe subscription data is missing! This is likely why your trial isn't working.</p>
+              <p className="text-yellow-600 mb-2">Stripe subscription data is missing! This is likely why your trial isn&apos;t working.</p>
               <Button onClick={syncStripeData} disabled={syncing}>
                 {syncing ? 'Syncing...' : 'Sync Stripe Subscription Data'}
               </Button>

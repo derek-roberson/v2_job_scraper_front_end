@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { stripe, isStripeConfigured } from '@/utils/stripe'
+import Stripe from 'stripe'
+
+// Type for accessing period fields on Stripe Subscription
+type StripeSubscriptionWithPeriod = Stripe.Subscription & {
+  current_period_start: number
+  current_period_end: number
+  cancel_at?: number | null
+  canceled_at?: number | null
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,16 +84,19 @@ export async function POST(req: NextRequest) {
       sub.status === 'active' || sub.status === 'trialing'
     ) || subscriptions.data[0]
 
+    // Cast to our extended type that includes period fields
+    const sub = activeSubscription as StripeSubscriptionWithPeriod
+
     // Prepare subscription data
     const subscriptionData = {
       stripe_customer_id: customer.id,
       stripe_subscription_id: activeSubscription.id,
       stripe_price_id: activeSubscription.items.data[0]?.price.id,
       status: activeSubscription.status,
-      current_period_start: new Date(activeSubscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(activeSubscription.current_period_end * 1000).toISOString(),
-      cancel_at: activeSubscription.cancel_at ? new Date(activeSubscription.cancel_at * 1000).toISOString() : null,
-      canceled_at: activeSubscription.canceled_at ? new Date(activeSubscription.canceled_at * 1000).toISOString() : null,
+      current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      cancel_at: sub.cancel_at ? new Date(sub.cancel_at * 1000).toISOString() : null,
+      canceled_at: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : null,
       subscription_tier: activeSubscription.status === 'active' || activeSubscription.status === 'trialing' ? 'pro' : 'free',
       updated_at: new Date().toISOString()
     }
