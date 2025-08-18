@@ -44,7 +44,7 @@ export function useAuth() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard`
       }
     })
     setLoading(false)

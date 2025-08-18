@@ -41,7 +41,7 @@ export function ResetPasswordDialog({ open, onOpenChange, userEmail }: ResetPass
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reset-password`,
       })
 
       if (resetError) {

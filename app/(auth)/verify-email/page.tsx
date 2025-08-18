@@ -27,7 +27,7 @@ function VerifyEmailContent() {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard`
         }
       })
 
