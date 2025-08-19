@@ -109,14 +109,14 @@ export default function PricingPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-        <p className="text-lg text-gray-600">
+      <div className="text-center mb-8 sm:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Choose Your Plan</h1>
+        <p className="text-base sm:text-lg text-gray-600 px-4">
           Select the perfect plan for your job search needs
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto px-4">
         {subscriptionPlans.map((plan) => (
           <Card
             key={plan.id}
@@ -128,8 +128,8 @@ export default function PricingPage() {
               </Badge>
             )}
             {plan.trialDays && (
-              <Badge className="absolute -top-3 right-4 bg-green-500">
-                {plan.trialDays} Day Free Trial
+              <Badge className="absolute -top-3 right-4 bg-green-500 text-xs sm:text-sm">
+                {plan.trialDays} Day Trial
               </Badge>
             )}
             
@@ -140,7 +140,7 @@ export default function PricingPage() {
             
             <CardContent className="space-y-4">
               <div className="text-center py-4">
-                <span className="text-4xl font-bold">
+                <span className="text-3xl sm:text-4xl font-bold">
                   ${plan.price}
                 </span>
                 <span className="text-gray-600">/{plan.interval}</span>

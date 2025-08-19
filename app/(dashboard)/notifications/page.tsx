@@ -50,22 +50,24 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <TestTube className="w-8 h-8" />
-            Notification Testing (Admin)
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <TestTube className="w-6 h-6 sm:w-8 sm:h-8" />
+            <span className="hidden sm:inline">Notification Testing (Admin)</span>
+            <span className="sm:hidden">Notifications</span>
           </h1>
-          <p className="text-gray-600">Test notification delivery systems and view delivery history</p>
+          <p className="text-sm sm:text-base text-gray-600">Test notification delivery systems and view delivery history</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Link href="/settings">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Settings className="w-4 h-4 mr-2" />
-              Notification Settings
+              <span className="hidden sm:inline">Notification Settings</span>
+              <span className="sm:hidden">Settings</span>
             </Button>
           </Link>
-          <Button variant="outline" onClick={refreshNotifications}>
+          <Button variant="outline" onClick={refreshNotifications} className="w-full sm:w-auto">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
@@ -108,40 +110,42 @@ export default function NotificationsPage() {
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="flex gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <label htmlFor="status-filter" className="text-sm font-medium">Status:</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger id="status-filter" className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="sent">Sent</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                  <SelectItem value="skipped">Skipped</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="flex flex-col sm:flex-row gap-3 flex-1">
+              <div className="flex items-center gap-2">
+                <label htmlFor="status-filter" className="text-sm font-medium min-w-fit">Status:</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="status-filter" className="w-full sm:w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="skipped">Skipped</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label htmlFor="type-filter" className="text-sm font-medium min-w-fit">Type:</label>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger id="type-filter" className="w-full sm:w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="mobile_push">Push</SelectItem>
+                    <SelectItem value="web_push">Web Push</SelectItem>
+                    <SelectItem value="webhook">Webhook</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="type-filter" className="text-sm font-medium">Type:</label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger id="type-filter" className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="mobile_push">Push</SelectItem>
-                  <SelectItem value="web_push">Web Push</SelectItem>
-                  <SelectItem value="webhook">Webhook</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center justify-center sm:justify-end">
               <Badge variant="secondary">
                 {filteredLogs.length} of {notificationLogs?.length || 0} notifications
               </Badge>
@@ -165,7 +169,7 @@ export default function NotificationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link href="/settings" className="block">
               <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <Settings className="w-6 h-6 mb-2" />

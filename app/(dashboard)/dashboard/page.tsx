@@ -86,7 +86,7 @@ export default function DashboardPage() {
         onComplete={handleOnboardingComplete}
       />
       
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-full overflow-x-hidden">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-gray-600">Welcome back, {user?.email}</p>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
           
           {!subscription.isPrivileged && subscription.planId === 'free' && !subscription.isTrial && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                   <div>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
                 <Button
                   size="sm"
                   onClick={() => router.push('/pricing')}
-                  className="ml-4"
+                  className="w-full sm:w-auto"
                 >
                   Upgrade to Pro
                 </Button>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -164,7 +164,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{queries.filter(q => q.is_active).length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{queries.filter(q => q.is_active).length}</div>
             <p className="text-xs text-gray-600">Currently monitoring</p>
           </CardContent>
         </Card>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{jobStats?.todayJobs || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold">{jobStats?.todayJobs || 0}</div>
             <p className="text-xs text-gray-600">New opportunities today</p>
           </CardContent>
         </Card>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{jobStats?.totalJobs || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold">{jobStats?.totalJobs || 0}</div>
             <p className="text-xs text-gray-600">All opportunities found</p>
           </CardContent>
         </Card>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {queries.length > 0 && jobStats?.uniqueQueries
                 ? `${Math.round((jobStats.uniqueQueries / queries.length) * 100)}%`
                 : '0%'}
@@ -211,7 +211,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Query Management Section */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Create Query Form */}
         <div>
           {showCreateForm ? (

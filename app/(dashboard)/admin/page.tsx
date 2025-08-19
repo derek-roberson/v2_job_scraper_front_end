@@ -41,16 +41,16 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8" />
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Shield className="h-6 w-6 sm:h-8 sm:w-8" />
             Admin Panel
           </h1>
-          <p className="text-gray-600">Manage users, permissions, and system settings</p>
+          <p className="text-sm sm:text-base text-gray-600">Manage users, permissions, and system settings</p>
         </div>
       </div>
 
       {/* Admin Stats Cards */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -58,7 +58,7 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" id="total-users">-</div>
+            <div className="text-xl sm:text-2xl font-bold" id="total-users">-</div>
             <p className="text-xs text-gray-600">Registered accounts</p>
           </CardContent>
         </Card>
@@ -70,7 +70,7 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" id="free-users">-</div>
+            <div className="text-xl sm:text-2xl font-bold" id="free-users">-</div>
             <p className="text-xs text-gray-600">Free tier accounts</p>
           </CardContent>
         </Card>
@@ -82,7 +82,7 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" id="pro-users">-</div>
+            <div className="text-xl sm:text-2xl font-bold" id="pro-users">-</div>
             <p className="text-xs text-gray-600">Paid subscriptions</p>
           </CardContent>
         </Card>
@@ -94,7 +94,7 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" id="privileged-users">-</div>
+            <div className="text-xl sm:text-2xl font-bold" id="privileged-users">-</div>
             <p className="text-xs text-gray-600">Admin & privileged</p>
           </CardContent>
         </Card>
@@ -106,7 +106,7 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" id="active-queries">-</div>
+            <div className="text-xl sm:text-2xl font-bold" id="active-queries">-</div>
             <p className="text-xs text-gray-600">System-wide</p>
           </CardContent>
         </Card>
@@ -114,18 +114,21 @@ export default function AdminPage() {
 
       {/* Admin Tabs */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            User Management
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="users" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">User Management</span>
+            <span className="sm:hidden">Users</span>
           </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Activity Log
+          <TabsTrigger value="activity" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Activity Log</span>
+            <span className="sm:hidden">Activity</span>
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            System Settings
+          <TabsTrigger value="settings" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">System Settings</span>
+            <span className="sm:hidden">Settings</span>
           </TabsTrigger>
         </TabsList>
 

@@ -25,19 +25,25 @@ export default function LandingPage() {
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               JobFirst
             </div>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs sm:text-sm">
               Beta
             </Badge>
           </div>
-          <div className="space-x-4">
+          <div className="flex gap-2 sm:gap-4">
             <Link href="/login">
-              <Button variant="ghost" className="bg-white/70 hover:bg-white border border-gray-200 text-gray-700 hover:text-gray-900">Sign In</Button>
+              <Button variant="ghost" className="bg-white/70 hover:bg-white border border-gray-200 text-gray-700 hover:text-gray-900 text-sm sm:text-base px-3 sm:px-4">
+                <span className="hidden sm:inline">Sign In</span>
+                <span className="sm:hidden">Login</span>
+              </Button>
             </Link>
             <Link href="/login?mode=signup">
-              <Button>Get Started Free</Button>
+              <Button className="text-sm sm:text-base px-3 sm:px-4">
+                <span className="hidden sm:inline">Get Started Free</span>
+                <span className="sm:hidden">Start Free</span>
+              </Button>
             </Link>
           </div>
         </nav>
@@ -52,17 +58,17 @@ export default function LandingPage() {
               Be Among the First 20 Applicants
             </Badge>
           </div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             Get LinkedIn Job Alerts{' '}
             <span className="text-blue-600">Before Everyone Else</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Set up custom job search queries and get hourly email alerts for new LinkedIn postings. 
             Apply early, stand out from the crowd, and land your dream job faster.
           </p>
           
           {/* Social Proof */}
-          <div className="flex justify-center items-center space-x-6 mb-8 text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 mb-8 text-xs sm:text-sm text-gray-600">
             <div className="flex items-center">
               <Users className="w-4 h-4 mr-1" />
               <span>2,000+ active job seekers</span>
@@ -73,20 +79,20 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link href="/login?mode=signup">
-              <Button size="lg" className="px-8 py-3">
+              <Button size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3">
                 Start Getting Alerts Free
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="px-8 py-3">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3">
               See How It Works
             </Button>
           </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mt-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-20">
           <Card className="border-2 hover:border-blue-200 transition-colors">
             <CardHeader>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">

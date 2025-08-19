@@ -41,7 +41,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-x-hidden max-w-full">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
@@ -145,7 +145,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Mobile header with menu button */}
         <div className="lg:hidden bg-white border-b p-4 flex items-center justify-between">
           <Button
@@ -156,10 +156,10 @@ export default function DashboardLayout({
             <Menu className="h-4 w-4" />
           </Button>
           <h1 className="text-lg font-semibold">Job Alerts</h1>
-          <div></div> {/* Spacer for centering */}
+          <div className="w-10"></div> {/* Spacer for centering */}
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-6 max-w-full">
           {children}
         </main>
       </div>
