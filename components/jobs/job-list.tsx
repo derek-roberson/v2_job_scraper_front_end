@@ -67,10 +67,10 @@ export function JobList({ jobs }: JobListProps) {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <CardTitle className="text-base sm:text-lg truncate">{job.title}</CardTitle>
+                  <div className="flex flex-wrap items-start gap-2 mb-2">
+                    <CardTitle className="text-base sm:text-lg break-words">{job.title}</CardTitle>
                     {job.applied && (
-                      <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-xs whitespace-nowrap">
+                      <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-xs whitespace-nowrap flex-shrink-0">
                         Applied
                       </Badge>
                     )}

@@ -13,12 +13,13 @@ import { Badge } from '@/components/ui/badge'
 import { CreateQueryForm } from '@/components/queries/create-query-form'
 import { QueryList } from '@/components/queries/query-list'
 import { NotificationOnboarding } from '@/components/onboarding/notification-onboarding'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [statsExpanded, setStatsExpanded] = useState(false)
   
   // Use actual query hooks
   const { data: queries = [], isLoading } = useQueries()
@@ -155,8 +156,75 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      {/* Stats Cards - Collapsible on Mobile */}
+      <div className="lg:hidden">
+        <Button
+          variant="outline"
+          className="w-full mb-3 flex items-center justify-between"
+          onClick={() => setStatsExpanded(!statsExpanded)}
+        >
+          <span className="font-medium">View Statistics</span>
+          {statsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+        {statsExpanded && (
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Active Queries
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{queries.filter(q => q.is_active).length}</div>
+                <p className="text-xs text-gray-600">Currently monitoring</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Jobs Today
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{jobStats?.todayJobs || 0}</div>
+                <p className="text-xs text-gray-600">New today</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Total Jobs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{jobStats?.totalJobs || 0}</div>
+                <p className="text-xs text-gray-600">All time</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Success Rate
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">
+                  {queries.length > 0 && jobStats?.uniqueQueries
+                    ? `${Math.round((jobStats.uniqueQueries / queries.length) * 100)}%`
+                    : '0%'}
+                </div>
+                <p className="text-xs text-gray-600">With results</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Stats Cards - Desktop */}
+      <div className="hidden lg:grid lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -164,7 +232,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{queries.filter(q => q.is_active).length}</div>
+            <div className="text-2xl font-bold">{queries.filter(q => q.is_active).length}</div>
             <p className="text-xs text-gray-600">Currently monitoring</p>
           </CardContent>
         </Card>
@@ -176,7 +244,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{jobStats?.todayJobs || 0}</div>
+            <div className="text-2xl font-bold">{jobStats?.todayJobs || 0}</div>
             <p className="text-xs text-gray-600">New opportunities today</p>
           </CardContent>
         </Card>
@@ -188,7 +256,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{jobStats?.totalJobs || 0}</div>
+            <div className="text-2xl font-bold">{jobStats?.totalJobs || 0}</div>
             <p className="text-xs text-gray-600">All opportunities found</p>
           </CardContent>
         </Card>
@@ -200,7 +268,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">
+            <div className="text-2xl font-bold">
               {queries.length > 0 && jobStats?.uniqueQueries
                 ? `${Math.round((jobStats.uniqueQueries / queries.length) * 100)}%`
                 : '0%'}
