@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { JobList } from '@/components/jobs/job-list'
 import { JobFilters } from '@/types/api'
-import { Search, Filter } from 'lucide-react'
+import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function JobsPage() {
   const [search, setSearch] = useState('')
@@ -20,6 +20,7 @@ export default function JobsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [showAppliedJobs, setShowAppliedJobs] = useState(false)
   const [appliedOnlyFilter, setAppliedOnlyFilter] = useState(false)
+  const [statsExpanded, setStatsExpanded] = useState(false)
 
   // Get user queries for filtering
   const { data: queries = [] } = useQueries()
@@ -55,8 +56,71 @@ export default function JobsPage() {
         <p className="text-gray-600">Discover opportunities found by your queries</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6">
+      {/* Stats Cards - Collapsible on Mobile */}
+      <div className="md:hidden">
+        <Button
+          variant="outline"
+          className="w-full mb-3 flex items-center justify-between"
+          onClick={() => setStatsExpanded(!statsExpanded)}
+        >
+          <span className="font-medium">View Job Statistics</span>
+          {statsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+        {statsExpanded && (
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Total Jobs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{stats?.totalJobs || 0}</div>
+                <p className="text-xs text-gray-600">All discovered</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Today
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{stats?.todayJobs || 0}</div>
+                <p className="text-xs text-gray-600">Posted today</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  This Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{stats?.weekJobs || 0}</div>
+                <p className="text-xs text-gray-600">Posted this week</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Active Sources
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">{stats?.uniqueQueries || 0}</div>
+                <p className="text-xs text-gray-600">Queries finding jobs</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Stats Cards - Desktop */}
+      <div className="hidden md:grid md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">

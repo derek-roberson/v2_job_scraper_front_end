@@ -157,7 +157,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Cards - Collapsible on Mobile */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <Button
           variant="outline"
           className="w-full mb-3 flex items-center justify-between"
@@ -224,7 +224,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards - Desktop */}
-      <div className="hidden lg:grid lg:grid-cols-4 gap-6">
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
