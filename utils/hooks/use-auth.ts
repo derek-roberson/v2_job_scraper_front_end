@@ -74,11 +74,15 @@ export function useAuth() {
       
       // Handle specific error cases
       if (error && error.status === 429) {
+        // Check if it's specifically an email rate limit
+        const isEmailRateLimit = error.message?.toLowerCase().includes('email rate limit')
         return { 
           data: null, 
           error: { 
             ...error, 
-            message: 'Too many sign-up attempts. Please wait a few minutes and try again.' 
+            message: isEmailRateLimit 
+              ? 'Too many verification emails sent. Please wait 1 hour before trying again, or use a different email address.' 
+              : 'Too many sign-up attempts. Please wait a few minutes and try again.' 
           } 
         }
       }
