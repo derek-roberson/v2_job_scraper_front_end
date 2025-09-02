@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Dialog, 
   DialogContent, 
@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { TimezoneSelect } from '@/components/ui/timezone-select'
+import { TimezoneSelect, TIMEZONES } from '@/components/ui/timezone-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { 
   Mail, 
@@ -32,15 +32,107 @@ interface NotificationOnboardingProps {
   onComplete: () => void
 }
 
+// Utility function to detect and match user's timezone
+const detectUserTimezone = (): string => {
+  try {
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    
+    // Check if the user's timezone exactly matches one of our available options
+    const exactMatch = TIMEZONES.find(tz => tz.value === userTimezone)
+    if (exactMatch) {
+      return exactMatch.value
+    }
+    
+    // If no exact match, try to find a reasonable mapping based on common timezone patterns
+    const timezoneMapping: Record<string, string> = {
+      // Eastern mappings
+      'America/New_York': 'America/New_York',
+      'America/Detroit': 'America/New_York',
+      'America/Indiana/Indianapolis': 'America/New_York',
+      'America/Kentucky/Louisville': 'America/New_York',
+      'America/Kentucky/Monticello': 'America/New_York',
+      'America/Montreal': 'America/New_York',
+      'America/Nassau': 'America/New_York',
+      'America/Nipigon': 'America/New_York',
+      'America/Pangnirtung': 'America/New_York',
+      'America/Thunder_Bay': 'America/New_York',
+      'America/Toronto': 'America/New_York',
+      
+      // Central mappings  
+      'America/Chicago': 'America/Chicago',
+      'America/Indiana/Knox': 'America/Chicago',
+      'America/Indiana/Tell_City': 'America/Chicago',
+      'America/Menominee': 'America/Chicago',
+      'America/North_Dakota/Beulah': 'America/Chicago',
+      'America/North_Dakota/Center': 'America/Chicago',
+      'America/North_Dakota/New_Salem': 'America/Chicago',
+      'America/Winnipeg': 'America/Chicago',
+      
+      // Mountain mappings
+      'America/Denver': 'America/Denver',
+      'America/Boise': 'America/Denver',
+      'America/Cambridge_Bay': 'America/Denver',
+      'America/Edmonton': 'America/Denver',
+      'America/Inuvik': 'America/Denver',
+      'America/Yellowknife': 'America/Denver',
+      
+      // Pacific mappings
+      'America/Los_Angeles': 'America/Los_Angeles',
+      'America/Vancouver': 'America/Los_Angeles',
+      'America/Whitehorse': 'America/Los_Angeles',
+      
+      // Alaska mappings
+      'America/Anchorage': 'America/Anchorage',
+      'America/Juneau': 'America/Anchorage',
+      'America/Metlakatla': 'America/Anchorage',
+      'America/Nome': 'America/Anchorage',
+      'America/Sitka': 'America/Anchorage',
+      'America/Yakutat': 'America/Anchorage',
+      
+      // Hawaii mappings
+      'Pacific/Honolulu': 'Pacific/Honolulu',
+      
+      // Atlantic mappings
+      'America/Puerto_Rico': 'America/Puerto_Rico',
+      'America/Anguilla': 'America/Puerto_Rico',
+      'America/Antigua': 'America/Puerto_Rico',
+      'America/Barbados': 'America/Puerto_Rico',
+      'America/Dominica': 'America/Puerto_Rico',
+      
+      // Pacific territories
+      'Pacific/Guam': 'Pacific/Guam',
+      'Pacific/Saipan': 'Pacific/Saipan',
+    }
+    
+    const mappedTimezone = timezoneMapping[userTimezone]
+    if (mappedTimezone) {
+      return mappedTimezone
+    }
+    
+    // Default to Eastern Time if no match found
+    return 'America/New_York'
+  } catch (error) {
+    console.warn('Could not detect user timezone, defaulting to Eastern Time', error)
+    return 'America/New_York'
+  }
+}
+
 export function NotificationOnboarding({ open, onComplete }: NotificationOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [respectNotificationHours, setRespectNotificationHours] = useState(true)
-  const [timezone, setTimezone] = useState('UTC')
+  const [timezone, setTimezone] = useState('America/New_York') // Will be updated on mount
   const [notificationHours, setNotificationHours] = useState<number[]>([9, 10, 11, 12, 13, 14, 15, 16, 17])
   const [saving, setSaving] = useState(false)
   
   const { updateNotificationPreferences } = useProfileMutations()
+
+  // Detect user's timezone on component mount
+  useEffect(() => {
+    const detectedTimezone = detectUserTimezone()
+    setTimezone(detectedTimezone)
+    console.log('Detected user timezone:', detectedTimezone)
+  }, [])
 
   const handleHourToggle = (hour: number, checked: boolean) => {
     if (checked) {
