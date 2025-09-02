@@ -42,6 +42,8 @@ export function useAuth() {
     setLoading(true)
     
     try {
+      console.log('Attempting signup with redirect URL:', `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard`)
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -49,6 +51,16 @@ export function useAuth() {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard`
         }
       })
+      
+      // Log detailed error information
+      if (error) {
+        console.error('Signup error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          stack: error.stack
+        })
+      }
       
       // Handle rate limiting with exponential backoff
       if (error && error.status === 429 && retryCount < 3) {
@@ -71,15 +83,27 @@ export function useAuth() {
         }
       }
       
+      // Handle 500 server errors
+      if (error && error.status === 500) {
+        return {
+          data: null,
+          error: {
+            ...error,
+            message: 'Server error. This might be a temporary issue with Supabase. Please try again in a moment or contact support if the problem persists.'
+          }
+        }
+      }
+      
       setLoading(false)
       return { data, error }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Unexpected error during signup:', err)
       setLoading(false)
       return { 
         data: null, 
         error: { 
-          message: 'Network error. Please check your connection and try again.',
-          status: 0
+          message: err.message || 'Network error. Please check your connection and try again.',
+          status: err.status || 0
         } 
       }
     }
