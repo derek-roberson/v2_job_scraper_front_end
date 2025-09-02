@@ -38,17 +38,51 @@ export function useAuth() {
     return { data, error }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, retryCount = 0): Promise<any> => {
     setLoading(true)
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard`
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard`
+        }
+      })
+      
+      // Handle rate limiting with exponential backoff
+      if (error && error.status === 429 && retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.warn(`Rate limited. Retrying in ${delay}ms...`)
+        setLoading(false)
+        
+        await new Promise(resolve => setTimeout(resolve, delay))
+        return signUp(email, password, retryCount + 1)
       }
-    })
-    setLoading(false)
-    return { data, error }
+      
+      // Handle specific error cases
+      if (error && error.status === 429) {
+        return { 
+          data: null, 
+          error: { 
+            ...error, 
+            message: 'Too many sign-up attempts. Please wait a few minutes and try again.' 
+          } 
+        }
+      }
+      
+      setLoading(false)
+      return { data, error }
+    } catch (err) {
+      setLoading(false)
+      return { 
+        data: null, 
+        error: { 
+          message: 'Network error. Please check your connection and try again.',
+          status: 0
+        } 
+      }
+    }
   }
 
   const signOut = async () => {
