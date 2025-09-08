@@ -19,15 +19,44 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   console.log('Trial end:', subscription.trial_end)
   console.log('Trial start:', subscription.trial_start)
   
-  const userId = subscription.metadata.userId
+  let userId = subscription.metadata.userId
+  
+  // If no userId in metadata, try to get it from the customer
+  if (!userId && subscription.customer) {
+    console.log('No userId in subscription metadata, checking customer')
+    const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+    
+    // Look up user by Stripe customer ID
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('stripe_customer_id', customerId)
+      .single()
+    
+    if (profile) {
+      userId = profile.id
+      console.log('Found userId from customer lookup:', userId)
+      
+      // Update the subscription metadata for future reference
+      if (stripe) {
+        await stripe.subscriptions.update(subscription.id, {
+          metadata: {
+            ...subscription.metadata,
+            userId: userId
+          }
+        })
+      }
+    }
+  }
   
   if (!userId) {
-    console.error('No userId in subscription metadata:', subscription.metadata)
-    console.error('Full subscription object keys:', Object.keys(subscription))
+    console.error('Could not determine userId for subscription:', subscription.id)
+    console.error('Subscription metadata:', subscription.metadata)
+    console.error('Customer:', subscription.customer)
     return
   }
 
-  console.log('Found userId in subscription metadata:', userId)
+  console.log('Processing subscription for userId:', userId)
 
   const sub = subscription as StripeSubscriptionWithPeriod
   const subscriptionData = {
@@ -123,9 +152,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    console.log('Processing webhook event:', event.type)
+    
     switch (event.type) {
       case 'customer.subscription.created':
+        console.log('New subscription created')
+        await handleSubscriptionUpdate(event.data.object as Stripe.Subscription)
+        break
+        
       case 'customer.subscription.updated':
+        console.log('Subscription updated')
         await handleSubscriptionUpdate(event.data.object as Stripe.Subscription)
         break
       
@@ -142,11 +178,33 @@ export async function POST(req: NextRequest) {
       
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session
-        if (session.mode === 'subscription') {
+        console.log('Checkout session completed:', session.id)
+        console.log('Session metadata:', session.metadata)
+        
+        if (session.mode === 'subscription' && session.subscription) {
+          // Retrieve the subscription with expanded data
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
           )
-          await handleSubscriptionUpdate(subscription)
+          
+          // If the subscription doesn't have userId in metadata, get it from the session
+          if (!subscription.metadata.userId && session.metadata?.userId && stripe) {
+            console.log('Updating subscription metadata with userId from session')
+            // Update the subscription with the userId
+            await stripe.subscriptions.update(subscription.id, {
+              metadata: {
+                ...subscription.metadata,
+                userId: session.metadata.userId,
+                priceId: session.metadata.priceId
+              }
+            })
+            
+            // Retrieve the updated subscription
+            const updatedSubscription = await stripe.subscriptions.retrieve(subscription.id)
+            await handleSubscriptionUpdate(updatedSubscription)
+          } else {
+            await handleSubscriptionUpdate(subscription)
+          }
         }
         break
       
