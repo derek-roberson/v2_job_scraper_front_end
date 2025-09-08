@@ -61,20 +61,21 @@ export function useSubscription() {
         return getFreePlanStatus()
       }
 
-      // Check if user has active Stripe subscription
+      // Check if user has active or trialing Stripe subscription
       const hasActiveStripeSubscription = 
         data.stripe_subscription_id && 
-        data.status === 'active'
+        (data.status === 'active' || data.status === 'trialing')
 
       // Determine if user is in trial
       const now = new Date()
       const currentPeriodStart = data.current_period_start ? new Date(data.current_period_start) : null
       const currentPeriodEnd = data.current_period_end ? new Date(data.current_period_end) : null
       
-      // Check if this is a trial (less than 7 days from start to end, and no payment yet)
-      const isTrial = currentPeriodStart && currentPeriodEnd && 
-        (currentPeriodEnd.getTime() - currentPeriodStart.getTime()) <= (7 * 24 * 60 * 60 * 1000) &&
-        hasActiveStripeSubscription
+      // Check if this is a trial (status is 'trialing' OR less than 7 days from start to end with active status)
+      const isTrial = data.status === 'trialing' || 
+        (currentPeriodStart && currentPeriodEnd && 
+         (currentPeriodEnd.getTime() - currentPeriodStart.getTime()) <= (7 * 24 * 60 * 60 * 1000) &&
+         data.status === 'active')
 
       // Determine plan based on Stripe data
       let planId: string
@@ -91,8 +92,8 @@ export function useSubscription() {
 
       const plan = subscriptionPlans.find(p => p.id === planId) || subscriptionPlans[0]
       
-      // Determine capabilities
-      const isActive = hasActiveStripeSubscription || planId === 'pro'
+      // Determine capabilities - trial users have full access
+      const isActive = hasActiveStripeSubscription || planId === 'pro' || isTrial
       const canCreateQueries = isActive || isTrial
       const canResumeQueries = isActive || isTrial  
       const canFetchNewJobs = isActive || isTrial
