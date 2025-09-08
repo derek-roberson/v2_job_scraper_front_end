@@ -57,7 +57,11 @@ export function useSubscription() {
         .eq('id', user.id)
         .single()
 
+      console.log('Subscription data from DB:', data)
+      console.log('Subscription error:', error)
+
       if (error || !data) {
+        console.log('No subscription data found, returning free plan')
         return getFreePlanStatus()
       }
 
@@ -65,6 +69,10 @@ export function useSubscription() {
       const hasActiveStripeSubscription = 
         data.stripe_subscription_id && 
         (data.status === 'active' || data.status === 'trialing')
+
+      console.log('Has active Stripe subscription:', hasActiveStripeSubscription)
+      console.log('Stripe subscription ID:', data.stripe_subscription_id)
+      console.log('Status:', data.status)
 
       // Determine if user is in trial
       const now = new Date()
@@ -76,6 +84,10 @@ export function useSubscription() {
         (currentPeriodStart && currentPeriodEnd && 
          (currentPeriodEnd.getTime() - currentPeriodStart.getTime()) <= (7 * 24 * 60 * 60 * 1000) &&
          data.status === 'active')
+      
+      console.log('Is trial:', isTrial)
+      console.log('Period start:', currentPeriodStart)
+      console.log('Period end:', currentPeriodEnd)
 
       // Determine plan based on Stripe data
       let planId: string

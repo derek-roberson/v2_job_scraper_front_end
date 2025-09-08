@@ -16,6 +16,8 @@ type StripeSubscriptionWithPeriod = Stripe.Subscription & {
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   console.log('Handling subscription update:', subscription.id, 'status:', subscription.status)
   console.log('Subscription metadata:', subscription.metadata)
+  console.log('Trial end:', subscription.trial_end)
+  console.log('Trial start:', subscription.trial_start)
   
   const userId = subscription.metadata.userId
   
